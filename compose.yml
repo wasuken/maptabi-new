@@ -1,0 +1,43 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend/src:/app
+      - /app/node_modules
+    ports:
+      - "3333:3000"
+    environment:
+      - VITE_API_URL=http://localhost:3334
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend/src:/app
+      - /app/node_modules
+    ports:
+      - "3334:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - DATABASE_URL=postgres://postgres:password@db:5432/mapdiary
+      - JWT_SECRET=development_jwt_secret
+      - JWT_EXPIRES_IN=7d
+    depends_on:
+      - db
+
+  db:
+    image: postgis/postgis:14-3.2
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data
+      - ./create.sql:/docker-entrypoint-initdb.d/create.sql
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mapdiary
