@@ -19,7 +19,7 @@ router.post(
   '/',
   [
     body('title').notEmpty().withMessage('タイトルは必須です'),
-    body('content').notEmpty().withMessage('本文は必須です')
+    body('content').notEmpty().withMessage('本文は必須です'),
   ],
   diaryController.createDiary
 );
@@ -29,7 +29,7 @@ router.put(
   '/:id',
   [
     body('title').notEmpty().withMessage('タイトルは必須です'),
-    body('content').notEmpty().withMessage('本文は必須です')
+    body('content').notEmpty().withMessage('本文は必須です'),
   ],
   diaryController.updateDiary
 );

@@ -15,18 +15,18 @@ const MapPage: React.FC = () => {
       try {
         // すべての日記を取得
         const diaryData = await diaryService.getAllDiaries();
-        
+
         // 日記IDをキーとしたオブジェクトに変換
         const diaryMap: { [key: number]: Diary } = {};
-        diaryData.forEach(diary => {
+        diaryData.forEach((diary) => {
           diaryMap[diary.id] = diary;
         });
         setDiaries(diaryMap);
-        
+
         // すべての位置情報を取得（このAPIはバックエンドで実装する必要があります）
         // ここでは簡略化のため、各日記の位置情報を個別に取得しています
         const allLocations: Location[] = [];
-        
+
         for (const diary of diaryData) {
           try {
             const diaryLocations = await diaryService.getDiaryLocations(diary.id);
@@ -35,7 +35,7 @@ const MapPage: React.FC = () => {
             console.error(`日記ID ${diary.id} の位置情報取得エラー:`, err);
           }
         }
-        
+
         setLocations(allLocations);
       } catch (err: any) {
         setError(err.message || 'データの取得に失敗しました');
@@ -43,7 +43,7 @@ const MapPage: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
@@ -54,11 +54,7 @@ const MapPage: React.FC = () => {
     <div className="map-page">
       <h1>あなたの思い出マップ</h1>
       <div className="map-container" style={{ height: '70vh' }}>
-        <MapView 
-          locations={locations} 
-          diaries={diaries} 
-          height="100%" 
-        />
+        <MapView locations={locations} diaries={diaries} height="100%" />
       </div>
       <div className="map-legend">
         <h3>凡例</h3>

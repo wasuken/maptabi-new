@@ -3,8 +3,8 @@ export interface DiaryLocation {
   diaryId: number;
   name?: string;
   coordinates: string; // WKB形式の地理空間データ
-  latitude: number;    // クライアント使用用
-  longitude: number;   // クライアント使用用
+  latitude: number; // クライアント使用用
+  longitude: number; // クライアント使用用
   altitude?: number;
   recordedAt?: Date;
   orderIndex: number;

@@ -1,4 +1,4 @@
-export interface Location {
+export interface DiaryLocation {
   id: number;
   diaryId: number;
   name?: string;

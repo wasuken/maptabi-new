@@ -11,7 +11,7 @@ router.post(
   [
     body('email').isEmail().withMessage('有効なメールアドレスを入力してください'),
     body('password').isLength({ min: 6 }).withMessage('パスワードは6文字以上である必要があります'),
-    body('displayName').notEmpty().withMessage('表示名は必須です')
+    body('displayName').notEmpty().withMessage('表示名は必須です'),
   ],
   userController.register
 );
@@ -21,7 +21,7 @@ router.post(
   '/login',
   [
     body('email').isEmail().withMessage('有効なメールアドレスを入力してください'),
-    body('password').notEmpty().withMessage('パスワードは必須です')
+    body('password').notEmpty().withMessage('パスワードは必須です'),
   ],
   userController.login
 );

@@ -5,8 +5,8 @@ import config from '../config/environment';
 
 export const generateToken = (user: User): string => {
   return jwt.sign(
-    { id: user.id, email: user.email, exp: Math.floor(Date.now() / 1000) + (60 * 60) },
-    config.jwtSecret,
+    { id: user.id, email: user.email, exp: Math.floor(Date.now() / 1000) + 60 * 60 },
+    config.jwtSecret
   );
 };
 

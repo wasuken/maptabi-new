@@ -5,22 +5,22 @@ import { useAuth } from '../hooks/useAuth';
 const RegisterPage: React.FC = () => {
   const { register, loading, error } = useAuth();
   const navigate = useNavigate();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
-    
+
     if (password !== confirmPassword) {
       setLocalError('パスワードが一致しません');
       return;
     }
-    
+
     try {
       await register(email, password, displayName);
       navigate('/');
@@ -28,18 +28,14 @@ const RegisterPage: React.FC = () => {
       // エラーはuseAuth内で処理されるため、ここでは特に何もしない
     }
   };
-  
+
   return (
     <div className="auth-page">
       <div className="auth-container">
         <h1>アカウント登録</h1>
-        
-        {(error || localError) && (
-          <div className="error-message">
-            {error || localError}
-          </div>
-        )}
-        
+
+        {(error || localError) && <div className="error-message">{error || localError}</div>}
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="displayName">ユーザー名</label>
@@ -51,7 +47,7 @@ const RegisterPage: React.FC = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="email">メールアドレス</label>
             <input
@@ -62,7 +58,7 @@ const RegisterPage: React.FC = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">パスワード</label>
             <input
@@ -74,7 +70,7 @@ const RegisterPage: React.FC = () => {
               minLength={6}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="confirmPassword">パスワード（確認）</label>
             <input
@@ -86,12 +82,12 @@ const RegisterPage: React.FC = () => {
               minLength={6}
             />
           </div>
-          
+
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? '登録中...' : '登録する'}
           </button>
         </form>
-        
+
         <div className="auth-links">
           <p>
             すでにアカウントをお持ちの方は

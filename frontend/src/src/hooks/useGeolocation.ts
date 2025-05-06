@@ -21,7 +21,7 @@ export const useGeolocation = () => {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setLocation(prev => ({
+      setLocation((prev) => ({
         ...prev,
         loading: false,
         error: 'Geolocation is not supported by your browser',
@@ -41,7 +41,7 @@ export const useGeolocation = () => {
     };
 
     const handleError = (error: GeolocationPositionError) => {
-      setLocation(prev => ({
+      setLocation((prev) => ({
         ...prev,
         loading: false,
         error: error.message,
@@ -54,11 +54,7 @@ export const useGeolocation = () => {
       maximumAge: 0,
     };
 
-    const watchId = navigator.geolocation.watchPosition(
-      handleSuccess,
-      handleError,
-      options
-    );
+    const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, options);
 
     return () => {
       navigator.geolocation.clearWatch(watchId);

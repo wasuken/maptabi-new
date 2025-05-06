@@ -7,7 +7,7 @@ services:
       - ./frontend/src:/app
       - /app/node_modules
     ports:
-      - "3333:3000"
+      - "3333:3333"
     environment:
       - VITE_API_URL=http://localhost:3334
     depends_on:

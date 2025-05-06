@@ -40,9 +40,7 @@ const DiaryList: React.FC = () => {
             {format(new Date(diary.createdAt), 'yyyy年MM月dd日 HH:mm', { locale: ja })}
           </p>
           <p className="diary-content">
-            {diary.content.length > 150
-              ? `${diary.content.substring(0, 150)}...`
-              : diary.content}
+            {diary.content.length > 150 ? `${diary.content.substring(0, 150)}...` : diary.content}
           </p>
           <div className="diary-actions">
             <Link to={`/diary/${diary.id}`} className="btn btn-view">

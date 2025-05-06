@@ -5,20 +5,20 @@ import { useAuth } from '../hooks/useAuth';
 const LoginPage: React.FC = () => {
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
-    
+
     if (!email || !password) {
       setLocalError('メールアドレスとパスワードを入力してください');
       return;
     }
-    
+
     try {
       await login(email, password);
       navigate('/');
@@ -26,18 +26,14 @@ const LoginPage: React.FC = () => {
       // エラーはuseAuth内で処理されるため、ここでは特に何もしない
     }
   };
-  
+
   return (
     <div className="auth-page">
       <div className="auth-container">
         <h1>ログイン</h1>
-        
-        {(error || localError) && (
-          <div className="error-message">
-            {error || localError}
-          </div>
-        )}
-        
+
+        {(error || localError) && <div className="error-message">{error || localError}</div>}
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">メールアドレス</label>
@@ -49,7 +45,7 @@ const LoginPage: React.FC = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">パスワード</label>
             <input
@@ -60,12 +56,12 @@ const LoginPage: React.FC = () => {
               required
             />
           </div>
-          
+
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'ログイン中...' : 'ログイン'}
           </button>
         </form>
-        
+
         <div className="auth-links">
           <p>
             アカウントをお持ちでない方は

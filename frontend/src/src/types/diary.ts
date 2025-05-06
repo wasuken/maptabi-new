@@ -1,3 +1,5 @@
+import { Location } from './location';
+
 export interface Diary {
   id: number;
   userId: number;
@@ -15,5 +17,5 @@ export interface DiaryInput {
 }
 
 export interface DiaryWithLocations extends Diary {
-  locations: Location[];
+  locations: DiaryLocation[];
 }

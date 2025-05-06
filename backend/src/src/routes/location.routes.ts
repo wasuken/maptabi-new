@@ -13,7 +13,7 @@ router.post(
   '/diaries/:diaryId',
   [
     body('latitude').isFloat().withMessage('緯度は数値で入力してください'),
-    body('longitude').isFloat().withMessage('経度は数値で入力してください')
+    body('longitude').isFloat().withMessage('経度は数値で入力してください'),
   ],
   locationController.addLocation
 );

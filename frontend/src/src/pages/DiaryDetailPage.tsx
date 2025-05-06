@@ -16,7 +16,7 @@ const DiaryDetailPage: React.FC = () => {
   useEffect(() => {
     const fetchDiary = async () => {
       if (!id) return;
-      
+
       try {
         const diaryData = await diaryService.getDiaryById(parseInt(id));
         setDiary(diaryData);
@@ -26,7 +26,7 @@ const DiaryDetailPage: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchDiary();
   }, [id]);
 
@@ -34,7 +34,7 @@ const DiaryDetailPage: React.FC = () => {
     if (!diary || !window.confirm('この日記を削除してもよろしいですか？')) {
       return;
     }
-    
+
     try {
       await diaryService.deleteDiary(diary.id);
       navigate('/');
@@ -55,22 +55,19 @@ const DiaryDetailPage: React.FC = () => {
           {format(new Date(diary.createdAt), 'yyyy年MM月dd日 HH:mm', { locale: ja })}
         </p>
       </div>
-      
+
       {diary.locations && diary.locations.length > 0 && (
         <div className="diary-map">
-          <MapView 
-            locations={diary.locations} 
-            height="300px" 
-          />
+          <MapView locations={diary.locations} height="300px" />
         </div>
       )}
-      
+
       <div className="diary-content">
         {diary.content.split('\n').map((paragraph, index) => (
           <p key={index}>{paragraph}</p>
         ))}
       </div>
-      
+
       <div className="diary-actions">
         <Link to={`/diary/edit/${diary.id}`} className="btn btn-edit">
           編集

@@ -5,19 +5,19 @@ import { useAuth } from '../../hooks/useAuth';
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-  
+
   return (
     <header className="app-header">
       <div className="header-content">
         <div className="logo">
           <Link to="/">地図×日記アプリ</Link>
         </div>
-        
+
         <nav className="main-nav">
           <ul>
             <li>
@@ -31,7 +31,7 @@ const Header: React.FC = () => {
             </li>
           </ul>
         </nav>
-        
+
         <div className="user-menu">
           {user ? (
             <>
