@@ -25,8 +25,12 @@ export const deleteDiary = async (id: number): Promise<void> => {
   await api.delete(`/diaries/${id}`);
 };
 
-export const addLocation = async (diaryId: number, location: LocationInput): Promise<void> => {
-  await api.post(`/diaries/${diaryId}/locations`, location);
+export const addLocations = async (diaryId: number, locations: LocationInput[]): Promise<void> => {
+  await api.post(`/diaries/${diaryId}/locations`, { locations: locations });
+};
+
+export const updateLocations = async (diaryId: number, locations: LocationInput[]): Promise<void> => {
+  await api.post(`/diaries/${diaryId}/locations`, { locations: locations });
 };
 
 export const getDiaryLocations = async (diaryId: number) => {
