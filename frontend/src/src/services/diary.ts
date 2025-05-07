@@ -29,7 +29,10 @@ export const addLocations = async (diaryId: number, locations: LocationInput[]):
   await api.post(`/diaries/${diaryId}/locations`, { locations: locations });
 };
 
-export const updateLocations = async (diaryId: number, locations: LocationInput[]): Promise<void> => {
+export const updateLocations = async (
+  diaryId: number,
+  locations: LocationInput[]
+): Promise<void> => {
   await api.post(`/diaries/${diaryId}/locations`, { locations: locations });
 };
 

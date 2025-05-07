@@ -6,7 +6,7 @@ import config from '../../../config/environment';
 jest.mock('jsonwebtoken');
 jest.mock('bcrypt');
 jest.mock('../../../config/environment', () => ({
-  jwtSecret: 'test_secret'
+  jwtSecret: 'test_secret',
 }));
 
 describe('Auth Utils', () => {
@@ -18,13 +18,13 @@ describe('Auth Utils', () => {
     it('should generate a JWT token', () => {
       // モックの設定 - 型を明示的に指定
       jest.spyOn(jwt, 'sign').mockImplementation(() => 'generated-token');
-      
+
       const user = {
         id: 1,
         email: 'test@example.com',
         displayName: 'Test User',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // 関数呼び出し
@@ -34,7 +34,7 @@ describe('Auth Utils', () => {
       expect(jwt.sign).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 1,
-          email: 'test@example.com'
+          email: 'test@example.com',
         }),
         config.jwtSecret
       );

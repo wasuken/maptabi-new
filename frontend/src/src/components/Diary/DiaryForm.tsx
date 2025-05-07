@@ -119,16 +119,16 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
 
       if (isEditing && diaryId) {
         await diaryService.updateDiary(diaryId, formData);
-	// 位置情報の更新
-	if (locations.length > 0) {
-	  await diaryService.addLocations(diaryId, locations);
-	}
+        // 位置情報の更新
+        if (locations.length > 0) {
+          await diaryService.addLocations(diaryId, locations);
+        }
       } else {
         const newDiary = await diaryService.createDiary(formData);
-	// 位置情報の追加
-	if (locations.length > 0 && newDiary.id) {
-	  await diaryService.addLocations(newDiary.id, locations);
-	}
+        // 位置情報の追加
+        if (locations.length > 0 && newDiary.id) {
+          await diaryService.addLocations(newDiary.id, locations);
+        }
       }
 
       navigate('/diaries');

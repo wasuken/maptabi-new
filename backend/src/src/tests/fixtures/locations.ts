@@ -9,6 +9,6 @@ export const mockLocations = [
     altitude: 10.5,
     recordedAt: new Date('2024-01-01T12:00:00Z'),
     orderIndex: 0,
-    createdAt: new Date('2024-01-01T00:00:00Z')
-  }
+    createdAt: new Date('2024-01-01T00:00:00Z'),
+  },
 ];
