@@ -137,7 +137,7 @@ export const updateDiary = async (
     // 日記の存在確認とアクセス権の確認
     const diaryExists = await client.query('SELECT * FROM diaries WHERE id = $1', [diaryId]);
 
-    if (diaryExists.rows.length === 0) {
+    if (Object.keys(diaryExists).length === 0 || diaryExists.rows.length === 0) {
       throw new Error('Diary not found');
     }
 
@@ -184,7 +184,7 @@ export const deleteDiary = async (diaryId: number, userId: number): Promise<void
     // 日記の存在確認とアクセス権の確認
     const diaryExists = await client.query('SELECT * FROM diaries WHERE id = $1', [diaryId]);
 
-    if (diaryExists.rows.length === 0) {
+    if (Object.keys(diaryExists).length === 0 || diaryExists.rows.length === 0) {
       throw new Error('Diary not found');
     }
 
@@ -230,7 +230,7 @@ export const getDiaryLocations = async (
       [diaryId, userId]
     );
 
-    if (diaryExists.rows.length === 0) {
+    if (Object.keys(diaryExists).length === 0 || diaryExists.rows.length === 0) {
       throw new Error('Diary not found or unauthorized');
     }
 
@@ -259,6 +259,86 @@ export const getDiaryLocations = async (
     }));
   } catch (error) {
     logger.error('Get diary locations error:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+// 既存のimportに追加
+import { LocationInput } from '../types/location.types';
+
+export const updateDiaryLocations = async (
+  diaryId: number,
+  locations: LocationInput[],
+  userId: number
+): Promise<DiaryLocation[]> => {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // 日記の存在確認とアクセス権の確認
+    const diaryExists = await client.query('SELECT * FROM diaries WHERE id = $1 AND user_id = $2', [
+      diaryId,
+      userId,
+    ]);
+
+    if (Object.keys(diaryExists).length === 0 || diaryExists.rows.length === 0) {
+      throw new Error('Diary not found or unauthorized');
+    }
+
+    // 既存の位置情報をすべて削除
+    await client.query('DELETE FROM locations WHERE diary_id = $1', [diaryId]);
+
+    // 新しい位置情報を挿入
+    const insertedLocations: DiaryLocation[] = [];
+
+    for (let i = 0; i < locations.length; i++) {
+      const location = locations[i];
+      const orderIndex = location.orderIndex !== undefined ? location.orderIndex : i;
+
+      const result = await client.query(
+        `INSERT INTO locations (
+           diary_id, name, coordinates, altitude, recorded_at, order_index, created_at
+         )
+         VALUES (
+           $1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography, $5, $6, $7, NOW()
+         )
+         RETURNING *, ST_X(coordinates::geometry) as longitude, ST_Y(coordinates::geometry) as latitude`,
+        [
+          diaryId,
+          location.name || null,
+          location.longitude,
+          location.latitude,
+          location.altitude || null,
+          location.recordedAt || null,
+          orderIndex,
+        ]
+      );
+
+      const insertedLocation = result.rows[0];
+
+      insertedLocations.push({
+        id: insertedLocation.id,
+        diaryId: insertedLocation.diary_id,
+        name: insertedLocation.name,
+        coordinates: insertedLocation.coordinates,
+        latitude: insertedLocation.latitude,
+        longitude: insertedLocation.longitude,
+        altitude: insertedLocation.altitude,
+        recordedAt: insertedLocation.recorded_at,
+        orderIndex: insertedLocation.order_index,
+        createdAt: insertedLocation.created_at,
+      });
+    }
+
+    await client.query('COMMIT');
+
+    return insertedLocations;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    logger.error('Update diary locations error:', error);
     throw error;
   } finally {
     client.release();

@@ -20,6 +20,14 @@ export interface DiaryWithLocations extends Diary {
   locations: DiaryLocation[];
 }
 
+export interface Tag {
+  id: number;
+  name: string;
+  color: string;
+  userId: number;
+  createdAt: Date;
+}
+
 export interface DiaryWithTags extends Diary {
   tags: Tag[];
 }

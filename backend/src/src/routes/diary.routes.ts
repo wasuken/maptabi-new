@@ -40,4 +40,15 @@ router.delete('/:id', diaryController.deleteDiary);
 // 特定の日記の位置情報を取得
 router.get('/:id/locations', diaryController.getDiaryLocations);
 
+// 日記の位置情報を更新
+router.post(
+  '/:id/locations',
+  [
+    body('locations').isArray().withMessage('位置情報は配列形式で指定してください'),
+    body('locations.*.latitude').isFloat().withMessage('緯度は数値で入力してください'),
+    body('locations.*.longitude').isFloat().withMessage('経度は数値で入力してください'),
+  ],
+  diaryController.updateDiaryLocations
+);
+
 export default router;

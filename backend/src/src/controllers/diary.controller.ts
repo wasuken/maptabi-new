@@ -197,3 +197,52 @@ export const getDiaryLocations = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: '位置情報の取得に失敗しました' });
   }
 };
+
+export const updateDiaryLocations = async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    if (!req.user || !req.user.id) {
+      throw new AppError('認証されていません', 401);
+    }
+
+    const diaryId = parseInt(req.params.id);
+
+    if (isNaN(diaryId)) {
+      throw new AppError('無効な日記IDです', 400);
+    }
+
+    const { locations } = req.body;
+
+    if (!Array.isArray(locations)) {
+      throw new AppError('位置情報は配列形式で指定してください', 400);
+    }
+
+    const updatedLocations = await diaryService.updateDiaryLocations(
+      diaryId,
+      locations,
+      req.user.id
+    );
+
+    res.json(updatedLocations);
+  } catch (error: any) {
+    logger.error('Update diary locations error:', error);
+
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+
+    if (error.message === 'Diary not found') {
+      return res.status(404).json({ message: '日記が見つかりません' });
+    }
+
+    if (error.message === 'Unauthorized') {
+      return res.status(403).json({ message: 'この日記の位置情報を更新する権限がありません' });
+    }
+
+    res.status(500).json({ message: '位置情報の更新に失敗しました' });
+  }
+};
