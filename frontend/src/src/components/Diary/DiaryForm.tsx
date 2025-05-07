@@ -5,6 +5,7 @@ import { DiaryInput } from '../../types/diary';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import MapView from '../Map/MapView';
 import { LocationInput } from '../../types/location';
+import { removeItemBySplice } from '../../utils/ArrayHelper';
 
 interface DiaryFormProps {
   isEditing?: boolean;
@@ -76,6 +77,11 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
         [name]: value,
       });
     }
+  };
+
+  const handleLocationDelete = (index: number) => {
+    let newlocs = [...locations];
+    setLocations(removeItemBySplice(newlocs, index));
   };
 
   const handleAddCurrentLocation = () => {
@@ -214,6 +220,14 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
               <ul>
                 {locations.map((loc, index) => (
                   <li key={index}>
+                    <button
+                      type="button"
+                      className="btn btn-delete"
+                      disabled={loading}
+                      onClick={() => handleLocationDelete(index)}
+                    >
+                      削除
+                    </button>
                     {loc.name || `地点 ${index + 1}`}: {loc.latitude.toFixed(6)},{' '}
                     {loc.longitude.toFixed(6)}
                   </li>

@@ -91,79 +91,96 @@ const MapView: React.FC<MapViewProps> = ({
   }, [center, zoom, onMapClick]);
 
   // 位置情報のマーカー・ルート表示
+  // 位置情報のマーカー・ルート表示
   useEffect(() => {
     if (!mapInitialized || !map.current || locations.length === 0) return;
 
-    // 既存のマーカーとルートを削除
-    const existingMarkers = document.querySelectorAll('.maplibregl-marker');
-    existingMarkers.forEach((marker) => marker.remove());
+    // スタイルが読み込み済みかどうかをチェック
+    const updateMapFeatures = () => {
+      // 既存のマーカーとルートを削除
+      const existingMarkers = document.querySelectorAll('.maplibregl-marker');
+      existingMarkers.forEach((marker) => marker.remove());
 
-    if (map.current.getSource('route')) {
-      map.current.removeLayer('route-line');
-      map.current.removeSource('route');
-    }
+      if (map.current?.getSource('route')) {
+        map.current.removeLayer('route-line');
+        map.current.removeSource('route');
+      }
 
-    // マーカーの追加
-    locations.forEach((location) => {
-      const marker = new maplibregl.Marker()
-        .setLngLat([location.longitude, location.latitude])
-        .addTo(map.current!);
+      // マーカーの追加
+      locations.forEach((location) => {
+        const marker = new maplibregl.Marker()
+          .setLngLat([location.longitude, location.latitude])
+          .addTo(map.current!);
 
-      // ポップアップの追加
-      if (location.name) {
-        const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`<h3>${location.name}</h3>
+        // ポップアップの追加
+        if (location.name) {
+          const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`<h3>${location.name}</h3>
           <p>${location.recordedAt ? new Date(location.recordedAt).toLocaleString() : '日時不明'}</p>`);
 
-        marker.setPopup(popup);
-      }
-    });
+          marker.setPopup(popup);
+        }
+      });
 
-    // ルートの表示（3つ以上の地点があれば）
-    if (locations.length >= 2) {
-      const sortedLocations = [...locations].sort((a, b) => a.orderIndex - b.orderIndex);
-      const coordinates = sortedLocations.map((loc) => [loc.longitude, loc.latitude]);
+      // ルートの表示（2つ以上の地点があれば）
+      if (locations.length >= 2) {
+        const sortedLocations = [...locations].sort((a, b) => a.orderIndex - b.orderIndex);
+        const coordinates = sortedLocations.map((loc) => [loc.longitude, loc.latitude]);
 
-      map.current.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: coordinates,
+        map.current?.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: coordinates,
+            },
           },
-        },
-      });
+        });
 
-      map.current.addLayer({
-        id: 'route-line',
-        type: 'line',
-        source: 'route',
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-        },
-        paint: {
-          'line-color': '#3887be',
-          'line-width': 5,
-          'line-opacity': 0.75,
-        },
-      });
+        map.current?.addLayer({
+          id: 'route-line',
+          type: 'line',
+          source: 'route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': '#3887be',
+            'line-width': 5,
+            'line-opacity': 0.75,
+          },
+        });
 
-      // マップの表示範囲をルートに合わせる
-      const bounds = coordinates.reduce(
-        (bounds, coord) => {
-          return bounds.extend(coord as [number, number]);
-        },
-        new maplibregl.LngLatBounds(
-          coordinates[0] as [number, number],
-          coordinates[0] as [number, number]
-        )
-      );
+        // マップの表示範囲をルートに合わせる
+        const bounds = coordinates.reduce(
+          (bounds, coord) => {
+            return bounds.extend(coord as [number, number]);
+          },
+          new maplibregl.LngLatBounds(
+            coordinates[0] as [number, number],
+            coordinates[0] as [number, number]
+          )
+        );
 
-      map.current.fitBounds(bounds, {
-        padding: 50,
-      });
+        map.current?.fitBounds(bounds, {
+          padding: 50,
+        });
+      }
+    };
+
+    // スタイルが既に読み込まれているかチェック
+    if (map.current.isStyleLoaded()) {
+      updateMapFeatures();
+    } else {
+      // スタイルがまだ読み込まれていない場合はイベントリスナーを追加
+      const onStyleLoad = () => {
+        updateMapFeatures();
+        map.current?.off('style.load', onStyleLoad);
+      };
+
+      map.current.on('style.load', onStyleLoad);
     }
   }, [locations, mapInitialized]);
 

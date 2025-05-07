@@ -1,6 +1,5 @@
 import api from './api';
-import { Diary, DiaryInput, DiaryWithLocations } from '../types/diary';
-import { LocationInput } from '../types/location';
+import { LocationInput, Diary, DiaryInput, DiaryWithLocations } from '../types';
 
 export const getAllDiaries = async (): Promise<Diary[]> => {
   const response = await api.get<Diary[]>('/diaries');

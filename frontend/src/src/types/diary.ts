@@ -1,4 +1,4 @@
-import { Location } from './location';
+import { DiaryLocation } from './location';
 
 export interface Diary {
   id: number;
