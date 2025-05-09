@@ -19,6 +19,17 @@ const DiaryDetailPage: React.FC = () => {
 
       try {
         const diaryData = await diaryService.getDiaryById(parseInt(id));
+
+        // 位置情報がない場合は、ロケーションデータも取得
+        if (!diaryData.locations || diaryData.locations.length === 0) {
+          try {
+            const locationData = await diaryService.getDiaryLocations(parseInt(id));
+            diaryData.locations = locationData;
+          } catch (err) {
+            console.error('位置情報の取得に失敗しました:', err);
+          }
+        }
+
         setDiary(diaryData);
       } catch (err: any) {
         setError(err.message || '日記の取得に失敗しました');
