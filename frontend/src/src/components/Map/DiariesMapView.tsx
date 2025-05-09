@@ -4,6 +4,13 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Link } from 'react-router-dom';
 import { Diary } from '../../types/diary';
 import { DiaryLocation } from '../../types/location';
+import {
+  MarkerType,
+  getColorForDiary,
+  createCustomMarker,
+  initializeMapStyle,
+  setupMap,
+} from '../../utils/MapUtils';
 
 interface DiariesMapViewProps {
   // 全ての位置情報
@@ -16,24 +23,17 @@ interface DiariesMapViewProps {
   width?: string;
 }
 
-// 日記ごとにランダム色を割り当てるヘルパー関数
-const getColorForDiary = (diaryId: number): string => {
-  // 日記IDを基にしたシンプルなハッシュ
-  const hash = diaryId % 360;
-  // HSLカラーで彩度と明度を固定し、色相だけを変える
-  return `hsl(${hash}, 70%, 50%)`;
-};
-
 const DiariesMapView: React.FC<DiariesMapViewProps> = ({
   locations = [],
   diaries = {},
-  center = [139.6917, 35.6895], // デフォルト: 東京（注意: MapLibreはlng, latの順）
-  zoom = 10,
+  center,
+  zoom,
   height = '500px',
   width = '100%',
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const styleElement = useRef<HTMLStyleElement | null>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
 
   // 日記ごとにグループ化された位置情報
@@ -51,50 +51,15 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
 
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          osm: {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap Contributors',
-            maxzoom: 19,
-          },
-        },
-        layers: [
-          {
-            id: 'osm-tiles',
-            type: 'raster',
-            source: 'osm',
-            minzoom: 0,
-            maxzoom: 20,
-          },
-        ],
-      },
-      center: center,
-      zoom: zoom,
-    });
+    // スタイルを注入
+    styleElement.current = initializeMapStyle();
+
+    // マップを初期化
+    map.current = setupMap(mapContainer.current, center, zoom);
 
     // マップのロード完了時の処理
     map.current.on('load', () => {
-      if (map.current) {
-        // コントロールの追加
-        map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-        map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
-        map.current.addControl(
-          new maplibregl.GeolocateControl({
-            positionOptions: {
-              enableHighAccuracy: true,
-            },
-            trackUserLocation: true,
-          })
-        );
-
-        setMapInitialized(true);
-      }
+      setMapInitialized(true);
     });
 
     // クリーンアップ
@@ -102,6 +67,11 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
       if (map.current) {
         map.current.remove();
         map.current = null;
+      }
+      // スタイル要素も削除
+      if (styleElement.current) {
+        document.head.removeChild(styleElement.current);
+        styleElement.current = null;
       }
     };
   }, [center, zoom]);
@@ -136,8 +106,12 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
         const color = getColorForDiary(diaryId);
         const diary = diaries[diaryId];
 
+        // orderIndexでソート
+        const sortedLocations = [...diaryLocations].sort((a, b) => a.orderIndex - b.orderIndex);
+        const locationCount = sortedLocations.length;
+
         // この日記の位置情報でバウンズを拡張
-        diaryLocations.forEach((location) => {
+        sortedLocations.forEach((location, index) => {
           const lngLat: [number, number] = [location.longitude, location.latitude];
 
           if (!bounds) {
@@ -146,18 +120,51 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
             bounds.extend(lngLat);
           }
 
-          // マーカーの作成
+          // マーカータイプを決定
+          let markerType: MarkerType;
+          if (locationCount === 1) {
+            markerType = MarkerType.SINGLE;
+          } else if (index === 0) {
+            markerType = MarkerType.START;
+          } else if (index === locationCount - 1) {
+            markerType = MarkerType.END;
+          } else {
+            markerType = MarkerType.MIDDLE;
+          }
+
+          // マーカー番号（1から始まる連番）
+          const markerNumber = index + 1;
+
+          // カスタムマーカーを作成
+          const markerElement = createCustomMarker(markerNumber, color, markerType);
+
+          // マーカーを地図に追加
           const marker = new maplibregl.Marker({
-            color: color,
+            element: markerElement,
           })
             .setLngLat(lngLat)
             .addTo(map.current!);
 
           // ポップアップの追加
+          let markerTypeText = '';
+          switch (markerType) {
+            case MarkerType.START:
+              markerTypeText = '開始地点';
+              break;
+            case MarkerType.END:
+              markerTypeText = '終了地点';
+              break;
+            case MarkerType.SINGLE:
+              markerTypeText = '単一地点';
+              break;
+            default:
+              markerTypeText = `地点 ${markerNumber}`;
+          }
+
           const popupContent = `
             <div>
               <h3>${diary?.title || '無題の日記'}</h3>
-              <p>${location.name || '名称なし'}</p>
+              <p>${markerTypeText}: ${location.name || '名称なし'}</p>
               <p>${location.recordedAt ? new Date(location.recordedAt).toLocaleString() : '日時不明'}</p>
               <a href="/diary/${diaryId}" target="_blank">詳細を見る</a>
             </div>
@@ -168,9 +175,7 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
         });
 
         // 位置情報が2つ以上ある場合はルートを描画
-        if (diaryLocations.length >= 2) {
-          // orderIndexでソート
-          const sortedLocations = [...diaryLocations].sort((a, b) => a.orderIndex - b.orderIndex);
+        if (sortedLocations.length >= 2) {
           const coordinates = sortedLocations.map((loc) => [loc.longitude, loc.latitude]);
 
           const routeId = `route-${diaryId}`;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import DiariesMapView from '../components/Map/DiariesMapView';
+import { DiariesMapView } from '../components/Map';
+import MarkerLegend from '../components/Map/MarkerLegend';
 import * as diaryService from '../services/diary';
 import { DiaryLocation } from '../types/location';
 import { Diary } from '../types/diary';
@@ -55,11 +56,16 @@ const MapPage: React.FC = () => {
       <div className="map-container" style={{ height: '70vh' }}>
         <DiariesMapView locations={locations} diaries={diaries} height="100%" />
       </div>
-      <div className="map-legend">
-        <h3>凡例</h3>
-        <p>マーカーをクリックすると、その場所に関連する日記の詳細が表示されます。</p>
-        <p>現在地を表示するには、地図右上のボタンをクリックしてください。</p>
-        <p>同じ色のマーカーと線は同じ日記に属する位置情報です。</p>
+
+      <MarkerLegend />
+
+      <div className="map-description">
+        <p>
+          マーカーをクリックすると、その場所に関連する日記の詳細が表示されます。現在地を表示するには、地図右上のボタンをクリックしてください。
+        </p>
+        <p>
+          マップ上では、訪問した場所の順序が番号付きで表示されます。また、経路の始点と終点は形状が異なるマーカーで表示されています。
+        </p>
       </div>
     </div>
   );
