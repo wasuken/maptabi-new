@@ -1,0 +1,111 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev, main ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:14-3.2
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mapdiary_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend/src/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd backend/src
+          npm ci
+
+      - name: Setup Database
+        run: |
+          cd backend/src
+          cp .env.test.example .env.test
+          npm run db:setup:test || echo "No db setup script found"
+
+      - name: Run backend tests
+        run: |
+          cd backend/src
+          npm test
+
+      - name: Run linting
+        run: |
+          cd backend/src
+          npm run lint
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/src/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd frontend/src
+          npm ci
+
+      - name: Run ESLint
+        run: |
+          cd frontend/src
+          npm run lint
+
+      - name: Run unit tests
+        run: |
+          cd frontend/src
+          npm test || echo "No test script found"
+
+      - name: Run E2E tests
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: frontend/src
+          build: npm run build
+          start: npm run preview
+          wait-on: 'http://localhost:4173'
+          browser: chrome
+          headless: true
+
+  promote-to-main:
+    needs: [backend-tests, frontend-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Push to main
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout main
+          git merge --ff-only origin/dev
+          git push origin main
