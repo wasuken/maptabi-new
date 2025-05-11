@@ -9,7 +9,7 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
-
+    
     services:
       postgres:
         image: postgis/postgis:14-3.2
@@ -23,66 +23,66 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+    
     steps:
       - uses: actions/checkout@v3
-
+      
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'backend/src/package-lock.json'
-
+      
       - name: Install dependencies
         run: |
           cd backend/src
           npm ci
-
+      
       - name: Setup Database
         run: |
           cd backend/src
           cp .env.test.example .env.test
           npm run db:setup:test || echo "No db setup script found"
-
+      
       - name: Run backend tests
         run: |
           cd backend/src
           npm test
-
+      
       - name: Run linting
         run: |
           cd backend/src
           npm run lint
-
+  
   frontend-tests:
     runs-on: ubuntu-latest
-
+    
     steps:
       - uses: actions/checkout@v3
-
+      
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'frontend/src/package-lock.json'
-
+      
       - name: Install dependencies
         run: |
           cd frontend/src
           npm ci
-
+      
       - name: Run ESLint
         run: |
           cd frontend/src
           npm run lint
-
+      
       - name: Run unit tests
         run: |
           cd frontend/src
           npm test || echo "No test script found"
-
+      
       - name: Run E2E tests
         uses: cypress-io/github-action@v5
         with:
@@ -92,16 +92,17 @@ jobs:
           wait-on: 'http://localhost:4173'
           browser: chrome
           headless: true
-
+  
   promote-to-main:
     needs: [backend-tests, frontend-tests]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && needs.backend-tests.result == 'success' && needs.frontend-tests.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Push to main
         run: |
           git config user.name "GitHub Actions"
@@ -109,3 +110,111 @@ jobs:
           git checkout main
           git merge --ff-only origin/dev
           git push origin main
+  
+  discord-notification:
+    needs: [backend-tests, frontend-tests, promote-to-main]
+    if: always() # テストの成功/失敗に関わらず常に通知
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Get commit details
+        id: commit-details
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "author=$(git log -1 ${{ github.event.pull_request.head.sha }} --pretty=format:'%an')" >> $GITHUB_OUTPUT
+            echo "message=$(git log -1 ${{ github.event.pull_request.head.sha }} --pretty=format:'%s')" >> $GITHUB_OUTPUT
+            echo "changes=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | wc -l)" >> $GITHUB_OUTPUT
+            echo "files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | sort | head -10 | sed 's/^/- /' | tr '\n' '\n' | sed 's/\n$//')" >> $GITHUB_OUTPUT
+          else
+            echo "author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+            echo "message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+            echo "changes=$(git diff --name-only HEAD~1 | wc -l)" >> $GITHUB_OUTPUT
+            echo "files_changed=$(git diff --name-only HEAD~1 | sort | head -10 | sed 's/^/- /' | tr '\n' '\n' | sed 's/\n$//')" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Format date time
+        id: format-time
+        run: |
+          echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+      
+      - name: Set status emojis and colors
+        id: status
+        run: |
+          # Backend tests status
+          if [[ "${{ needs.backend-tests.result }}" == "success" ]]; then
+            echo "backend_emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "backend_emoji=❌" >> $GITHUB_OUTPUT
+          fi
+          
+          # Frontend tests status
+          if [[ "${{ needs.frontend-tests.result }}" == "success" ]]; then
+            echo "frontend_emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "frontend_emoji=❌" >> $GITHUB_OUTPUT
+          fi
+          
+          # Promote to main status
+          if [[ "${{ needs.promote-to-main.result }}" == "success" ]]; then
+            echo "promote_emoji=✅" >> $GITHUB_OUTPUT
+            echo "promote_text=成功" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.promote-to-main.result }}" == "skipped" ]]; then
+            echo "promote_emoji=⏭️" >> $GITHUB_OUTPUT
+            echo "promote_text=スキップ" >> $GITHUB_OUTPUT
+          else
+            echo "promote_emoji=❌" >> $GITHUB_OUTPUT
+            echo "promote_text=失敗" >> $GITHUB_OUTPUT
+          fi
+          
+          # Overall status
+          if [[ "${{ needs.backend-tests.result }}" == "success" && "${{ needs.frontend-tests.result }}" == "success" && ("${{ needs.promote-to-main.result }}" == "success" || "${{ needs.promote-to-main.result }}" == "skipped") ]]; then
+            echo "overall=success" >> $GITHUB_OUTPUT
+            echo "color=3066993" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "overall=failure" >> $GITHUB_OUTPUT
+            echo "color=15158332" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Send Discord notification
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_USERNAME: GitHub CI/CD
+          DISCORD_AVATAR: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        with:
+          args: |
+            {
+              "embeds": [{
+                "title": "${{ steps.status.outputs.emoji }} ワークフロー結果: ${{ github.workflow }}",
+                "description": "**ビルド #${{ github.run_number }}** (${{ steps.format-time.outputs.date }})\n\n**リポジトリ:** [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})\n**ブランチ:** `${{ github.ref_name }}`\n**イベント:** ${{ github.event_name }}",
+                "color": ${{ steps.status.outputs.color }},
+                "fields": [
+                  {
+                    "name": "コミット情報",
+                    "value": "**メッセージ:** ${{ steps.commit-details.outputs.message }}\n**著者:** ${{ steps.commit-details.outputs.author }}\n**変更ファイル数:** ${{ steps.commit-details.outputs.changes }}"
+                  },
+                  {
+                    "name": "テスト結果",
+                    "value": "${{ steps.status.outputs.backend_emoji }} **バックエンド:** ${{ needs.backend-tests.result }}\n${{ steps.status.outputs.frontend_emoji }} **フロントエンド:** ${{ needs.frontend-tests.result }}"
+                  },
+                  {
+                    "name": "デプロイ状況",
+                    "value": "${{ steps.status.outputs.promote_emoji }} **メインブランチへのプロモート:** ${{ steps.status.outputs.promote_text }}"
+                  },
+                  {
+                    "name": "変更ファイル (最大10件)",
+                    "value": "```\n${{ steps.commit-details.outputs.files_changed }}\n```"
+                  }
+                ],
+                "footer": {
+                  "text": "GitHub Actions"
+                },
+                "timestamp": "${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at }}",
+                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              }]
+            }
