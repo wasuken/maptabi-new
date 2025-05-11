@@ -24,7 +24,7 @@ export interface AuthResponse {
 }
 
 export interface JwtPayload {
-  id: string;
+  id: number;
   email: string;
   exp: number;
 }

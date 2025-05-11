@@ -21,11 +21,13 @@ export const register = async (req: Request, res: Response) => {
     });
 
     res.status(201).json(response);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('User registration error:', error);
 
-    if (error.message === 'User already exists') {
-      return res.status(409).json({ message: 'このメールアドレスは既に使用されています' });
+    if (error instanceof Error) {
+      if (error.message === 'User already exists') {
+        return res.status(409).json({ message: 'このメールアドレスは既に使用されています' });
+      }
     }
 
     res.status(500).json({ message: '登録に失敗しました' });
@@ -44,11 +46,15 @@ export const login = async (req: Request, res: Response) => {
     const response = await userService.login({ email, password });
 
     res.json(response);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('User login error:', error);
 
-    if (error.message === 'Invalid credentials') {
-      return res.status(401).json({ message: 'メールアドレスまたはパスワードが正しくありません' });
+    if (error instanceof Error) {
+      if (error.message === 'Invalid credentials') {
+        return res
+          .status(401)
+          .json({ message: 'メールアドレスまたはパスワードが正しくありません' });
+      }
     }
 
     res.status(500).json({ message: 'ログインに失敗しました' });
@@ -72,7 +78,7 @@ export const getCurrentUser = async (req: AuthRequest, res: Response) => {
     delete userData.passwordHash;
 
     res.json(userData);
-  } catch (error: ApiError | Error) {
+  } catch (error: unknown) {
     logger.error('Get current user error:', error);
 
     if (error instanceof AppError) {

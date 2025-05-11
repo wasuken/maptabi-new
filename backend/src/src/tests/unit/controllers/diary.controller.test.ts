@@ -27,7 +27,7 @@ describe('Diary Controller', () => {
     };
 
     mockRequest = {
-      user: { id: 1 },
+      user: { id: 1, email: 'test@example.com', exp: 10 },
       params: {},
       body: {},
     };

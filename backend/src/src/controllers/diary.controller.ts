@@ -14,7 +14,7 @@ export const getAllDiaries = async (req: AuthRequest, res: Response) => {
     const diaries = await diaryService.getAllDiaries(req.user.id);
 
     res.json(diaries);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Get all diaries error:', error);
 
     if (error instanceof AppError) {
@@ -44,7 +44,7 @@ export const getDiaryById = async (req: AuthRequest, res: Response) => {
     }
 
     res.json(diary);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Get diary by id error:', error);
 
     if (error instanceof AppError) {
@@ -78,7 +78,7 @@ export const createDiary = async (req: AuthRequest, res: Response) => {
     );
 
     res.status(201).json(newDiary);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Create diary error:', error);
 
     if (error instanceof AppError) {
@@ -119,19 +119,20 @@ export const updateDiary = async (req: AuthRequest, res: Response) => {
     );
 
     res.json(updatedDiary);
-  } catch (error: y) {
+  } catch (error: unknown) {
     logger.error('Update diary error:', error);
 
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({ message: error.message });
     }
+    if (error instanceof Error) {
+      if (error.message === 'Diary not found') {
+        return res.status(404).json({ message: '日記が見つかりません' });
+      }
 
-    if (error.message === 'Diary not found') {
-      return res.status(404).json({ message: '日記が見つかりません' });
-    }
-
-    if (error.message === 'Unauthorized') {
-      return res.status(403).json({ message: 'この日記を編集する権限がありません' });
+      if (error.message === 'Unauthorized') {
+        return res.status(403).json({ message: 'この日記を編集する権限がありません' });
+      }
     }
 
     res.status(500).json({ message: '日記の更新に失敗しました' });
@@ -153,19 +154,20 @@ export const deleteDiary = async (req: AuthRequest, res: Response) => {
     await diaryService.deleteDiary(diaryId, req.user.id);
 
     res.status(204).send();
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Delete diary error:', error);
 
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({ message: error.message });
     }
+    if (error instanceof Error) {
+      if (error.message === 'Diary not found') {
+        return res.status(404).json({ message: '日記が見つかりません' });
+      }
 
-    if (error.message === 'Diary not found') {
-      return res.status(404).json({ message: '日記が見つかりません' });
-    }
-
-    if (error.message === 'Unauthorized') {
-      return res.status(403).json({ message: 'この日記を削除する権限がありません' });
+      if (error.message === 'Unauthorized') {
+        return res.status(403).json({ message: 'この日記を削除する権限がありません' });
+      }
     }
 
     res.status(500).json({ message: '日記の削除に失敗しました' });
@@ -187,7 +189,7 @@ export const getDiaryLocations = async (req: AuthRequest, res: Response) => {
     const locations = await diaryService.getDiaryLocations(diaryId, req.user.id);
 
     res.json(locations);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Get diary locations error:', error);
 
     if (error instanceof AppError) {
@@ -228,19 +230,20 @@ export const updateDiaryLocations = async (req: AuthRequest, res: Response) => {
     );
 
     res.json(updatedLocations);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Update diary locations error:', error);
 
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({ message: error.message });
     }
+    if (error instanceof AppError) {
+      if (error.message === 'Diary not found') {
+        return res.status(404).json({ message: '日記が見つかりません' });
+      }
 
-    if (error.message === 'Diary not found') {
-      return res.status(404).json({ message: '日記が見つかりません' });
-    }
-
-    if (error.message === 'Unauthorized') {
-      return res.status(403).json({ message: 'この日記の位置情報を更新する権限がありません' });
+      if (error.message === 'Unauthorized') {
+        return res.status(403).json({ message: 'この日記の位置情報を更新する権限がありません' });
+      }
     }
 
     res.status(500).json({ message: '位置情報の更新に失敗しました' });

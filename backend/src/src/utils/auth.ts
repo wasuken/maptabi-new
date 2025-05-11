@@ -12,7 +12,7 @@ export const generateToken = (user: User): string => {
 
 export const verifyToken = (token: string): JwtPayload => {
   try {
-    return jwt.verify(token, config.jwtSecret);
+    return jwt.verify(token, config.jwtSecret) as JwtPayload;
   } catch (error) {
     throw new Error('Invalid token');
   }

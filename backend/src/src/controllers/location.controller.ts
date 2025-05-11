@@ -38,19 +38,20 @@ export const addLocation = async (req: AuthRequest, res: Response) => {
     );
 
     res.status(201).json(newLocation);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Add location error:', error);
 
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({ message: error.message });
     }
+    if (error instanceof Error) {
+      if (error.message === 'Diary not found') {
+        return res.status(404).json({ message: '日記が見つかりません' });
+      }
 
-    if (error.message === 'Diary not found') {
-      return res.status(404).json({ message: '日記が見つかりません' });
-    }
-
-    if (error.message === 'Unauthorized') {
-      return res.status(403).json({ message: 'この日記に位置情報を追加する権限がありません' });
+      if (error.message === 'Unauthorized') {
+        return res.status(403).json({ message: 'この日記に位置情報を追加する権限がありません' });
+      }
     }
 
     res.status(500).json({ message: '位置情報の追加に失敗しました' });
@@ -72,19 +73,20 @@ export const deleteLocation = async (req: AuthRequest, res: Response) => {
     await locationService.deleteLocation(locationId, req.user.id);
 
     res.status(204).send();
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Delete location error:', error);
 
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({ message: error.message });
     }
+    if (error instanceof Error) {
+      if (error.message === 'Location not found') {
+        return res.status(404).json({ message: '位置情報が見つかりません' });
+      }
 
-    if (error.message === 'Location not found') {
-      return res.status(404).json({ message: '位置情報が見つかりません' });
-    }
-
-    if (error.message === 'Unauthorized') {
-      return res.status(403).json({ message: 'この位置情報を削除する権限がありません' });
+      if (error.message === 'Unauthorized') {
+        return res.status(403).json({ message: 'この位置情報を削除する権限がありません' });
+      }
     }
 
     res.status(500).json({ message: '位置情報の削除に失敗しました' });
@@ -100,7 +102,7 @@ export const getAllUserLocations = async (req: AuthRequest, res: Response) => {
     const locations = await locationService.getAllUserLocations(req.user.id);
 
     res.json(locations);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Get all user locations error:', error);
 
     if (error instanceof AppError) {
@@ -141,7 +143,7 @@ export const getPublicLocationsNearby = async (req: Request, res: Response) => {
     );
 
     res.json(locations);
-  } catch (error: Error) {
+  } catch (error: unknown) {
     logger.error('Get public locations nearby error:', error);
     res.status(500).json({ message: '位置情報の取得に失敗しました' });
   }
