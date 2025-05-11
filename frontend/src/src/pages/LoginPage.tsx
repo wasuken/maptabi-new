@@ -22,8 +22,11 @@ const LoginPage: React.FC = () => {
     try {
       await login(email, password);
       navigate('/');
-    } catch (err: any) {
-      // エラーはuseAuth内で処理されるため、ここでは特に何もしない
+    } catch (err: ApiError | unknown) {
+      const error = err as ApiError;
+      setError(error.response?.data?.message || error.message || 'ログインに失敗しました');
+      setLocations([]);
+      throw err;
     }
   };
 

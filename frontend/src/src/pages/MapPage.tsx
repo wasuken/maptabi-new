@@ -37,8 +37,11 @@ const MapPage: React.FC = () => {
         }
 
         setLocations(allLocations);
-      } catch (err: any) {
-        setError(err.message || 'データの取得に失敗しました');
+      } catch (err: ApiError | unknown) {
+        const error = err as ApiError;
+        setError(error.response?.data?.message || error.message || 'データの取得に失敗しました');
+        setLocations([]);
+        throw err;
       } finally {
         setLoading(false);
       }

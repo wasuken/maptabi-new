@@ -24,8 +24,11 @@ const RegisterPage: React.FC = () => {
     try {
       await register(email, password, displayName);
       navigate('/');
-    } catch (err: any) {
-      // エラーはuseAuth内で処理されるため、ここでは特に何もしない
+    } catch (err: Error) {
+      setLocalError('エラー');
+      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -21,7 +21,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     res.status(201).json(response);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('User registration error:', error);
 
     if (error.message === 'User already exists') {
@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
     const response = await userService.login({ email, password });
 
     res.json(response);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('User login error:', error);
 
     if (error.message === 'Invalid credentials') {
@@ -68,10 +68,11 @@ export const getCurrentUser = async (req: AuthRequest, res: Response) => {
     }
 
     // パスワードハッシュを除外
-    const { passwordHash, ...userData } = user;
+    const userData = { ...user };
+    delete userData.passwordHash;
 
     res.json(userData);
-  } catch (error: any) {
+  } catch (error: ApiError | Error) {
     logger.error('Get current user error:', error);
 
     if (error instanceof AppError) {

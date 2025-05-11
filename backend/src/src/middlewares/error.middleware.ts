@@ -19,6 +19,7 @@ export const errorMiddleware = (
   next: NextFunction
 ) => {
   logger.error(err.message, { stack: err.stack });
+  logger.info(next);
 
   const statusCode = 'statusCode' in err ? err.statusCode : 500;
   const message = err.message || 'サーバーエラーが発生しました';

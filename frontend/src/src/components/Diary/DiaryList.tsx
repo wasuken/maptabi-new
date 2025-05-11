@@ -15,8 +15,9 @@ const DiaryList: React.FC = () => {
       try {
         const data = await diaryService.getAllDiaries();
         setDiaries(data);
-      } catch (err: any) {
+      } catch (err: Error) {
         setError(err.message || '日記の取得に失敗しました');
+        throw err;
       } finally {
         setLoading(false);
       }

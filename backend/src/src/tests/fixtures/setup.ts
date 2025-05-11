@@ -4,9 +4,6 @@ import path from 'path';
 // テスト環境用の.envファイルを読み込む
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.test') });
 
-// Mock DB setup
-import { Pool } from 'pg';
-
 // データベース接続のモック
 jest.mock('../../config/database', () => {
   const mockPool = {

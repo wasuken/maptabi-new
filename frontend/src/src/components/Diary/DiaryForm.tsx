@@ -4,7 +4,7 @@ import * as diaryService from '../../services/diary';
 import { DiaryInput } from '../../types/diary';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import MapView from '../Map/MapView';
-import { LocationInput } from '../../types/location';
+import { LocationInput, DiaryLocation } from '../../types/location';
 import { removeItemBySplice } from '../../utils/ArrayHelper';
 
 interface DiaryFormProps {
@@ -43,7 +43,7 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
           // 位置情報の取得
           const locationData = await diaryService.getDiaryLocations(diaryId);
           setLocations(
-            locationData.map((loc: any) => ({
+            locationData.map((loc: DiaryLocation) => ({
               name: loc.name,
               latitude: loc.latitude,
               longitude: loc.longitude,
@@ -52,7 +52,7 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
               orderIndex: loc.orderIndex,
             }))
           );
-        } catch (err: any) {
+        } catch (err: Error) {
           setError(err.message || '日記データの取得に失敗しました');
         } finally {
           setLoading(false);
@@ -80,7 +80,7 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
   };
 
   const handleLocationDelete = (index: number) => {
-    let newlocs = [...locations];
+    const newlocs = [...locations];
     setLocations(removeItemBySplice(newlocs, index));
   };
 
@@ -132,7 +132,7 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
       }
 
       navigate('/diaries');
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.message || '日記の保存に失敗しました');
     } finally {
       setLoading(false);

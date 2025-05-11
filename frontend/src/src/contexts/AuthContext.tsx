@@ -1,20 +1,20 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { User } from '../types/user';
 import * as authService from '../services/auth';
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
-  logout: () => void;
-}
-
-export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+import { AuthContext } from './AuthContextType';
 
 interface AuthProviderProps {
   children: ReactNode;
+}
+
+// APIエラー型の定義
+interface ApiError {
+  message: string;
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -46,8 +46,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       const response = await authService.login({ email, password });
       setUser(response.user);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'ログインに失敗しました');
+    } catch (err: ApiError | unknown) {
+      const error = err as ApiError;
+      setError(error.response?.data?.message || error.message || 'ログインに失敗しました');
       throw err;
     } finally {
       setLoading(false);
@@ -60,8 +61,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       const response = await authService.register({ email, password, displayName });
       setUser(response.user);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'アカウント登録に失敗しました');
+    } catch (err: ApiError | unknown) {
+      const error = err as ApiError;
+      setError(error.response?.data?.message || error.message || 'アカウント登録に失敗しました');
       throw err;
     } finally {
       setLoading(false);

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import * as diaryController from '../../../controllers/diary.controller';
 import * as diaryService from '../../../services/diary.service';
 import { AuthRequest } from '../../../middlewares/auth.middleware';

@@ -1,4 +1,4 @@
-.PHONY: fmt test up frontend-test backend-test
+.PHONY: fmt test up frontend-test backend-test lint backend-lint frontend-lint
 fmt:
 	docker compose exec frontend npm run format
 	docker compose exec backend npm run format
@@ -15,3 +15,13 @@ frontend-test:
 
 backend-test:
 	docker compose exec backend npm test
+
+lint:
+	make frontend-lint
+	make backend-lint
+
+backend-lint:
+	docker compose exec backend npm run lint
+
+frontend-lint:
+	docker compose exec frontend npm run lint

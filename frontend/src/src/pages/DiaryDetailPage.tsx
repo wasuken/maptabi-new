@@ -31,8 +31,10 @@ const DiaryDetailPage: React.FC = () => {
         }
 
         setDiary(diaryData);
-      } catch (err: any) {
-        setError(err.message || '日記の取得に失敗しました');
+      } catch (err: ApiError | unknown) {
+        const error = err as ApiError;
+        setError(error.response?.data?.message || error.message || '日記の取得に失敗しました');
+        throw err;
       } finally {
         setLoading(false);
       }
@@ -49,8 +51,10 @@ const DiaryDetailPage: React.FC = () => {
     try {
       await diaryService.deleteDiary(diary.id);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || '日記の削除に失敗しました');
+    } catch (err: ApiError | unknown) {
+      const error = err as ApiError;
+      setError(error.response?.data?.message || error.message || '日記の削除に失敗しました');
+      throw err;
     }
   };
 

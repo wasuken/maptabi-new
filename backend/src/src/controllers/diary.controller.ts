@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import * as diaryService from '../services/diary.service';
 import { AppError } from '../middlewares/error.middleware';
@@ -14,7 +14,7 @@ export const getAllDiaries = async (req: AuthRequest, res: Response) => {
     const diaries = await diaryService.getAllDiaries(req.user.id);
 
     res.json(diaries);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Get all diaries error:', error);
 
     if (error instanceof AppError) {
@@ -44,7 +44,7 @@ export const getDiaryById = async (req: AuthRequest, res: Response) => {
     }
 
     res.json(diary);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Get diary by id error:', error);
 
     if (error instanceof AppError) {
@@ -78,7 +78,7 @@ export const createDiary = async (req: AuthRequest, res: Response) => {
     );
 
     res.status(201).json(newDiary);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Create diary error:', error);
 
     if (error instanceof AppError) {
@@ -119,7 +119,7 @@ export const updateDiary = async (req: AuthRequest, res: Response) => {
     );
 
     res.json(updatedDiary);
-  } catch (error: any) {
+  } catch (error: y) {
     logger.error('Update diary error:', error);
 
     if (error instanceof AppError) {
@@ -153,7 +153,7 @@ export const deleteDiary = async (req: AuthRequest, res: Response) => {
     await diaryService.deleteDiary(diaryId, req.user.id);
 
     res.status(204).send();
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Delete diary error:', error);
 
     if (error instanceof AppError) {
@@ -187,7 +187,7 @@ export const getDiaryLocations = async (req: AuthRequest, res: Response) => {
     const locations = await diaryService.getDiaryLocations(diaryId, req.user.id);
 
     res.json(locations);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Get diary locations error:', error);
 
     if (error instanceof AppError) {
@@ -228,7 +228,7 @@ export const updateDiaryLocations = async (req: AuthRequest, res: Response) => {
     );
 
     res.json(updatedLocations);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Update diary locations error:', error);
 
     if (error instanceof AppError) {

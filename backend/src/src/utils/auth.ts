@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { User } from '../types/user.types';
+import { User, JwtPayload } from '../types/user.types';
 import config from '../config/environment';
 
 export const generateToken = (user: User): string => {
@@ -10,7 +10,7 @@ export const generateToken = (user: User): string => {
   );
 };
 
-export const verifyToken = (token: string): any => {
+export const verifyToken = (token: string): JwtPayload => {
   try {
     return jwt.verify(token, config.jwtSecret);
   } catch (error) {

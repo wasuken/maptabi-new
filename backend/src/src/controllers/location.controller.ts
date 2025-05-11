@@ -38,7 +38,7 @@ export const addLocation = async (req: AuthRequest, res: Response) => {
     );
 
     res.status(201).json(newLocation);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Add location error:', error);
 
     if (error instanceof AppError) {
@@ -72,7 +72,7 @@ export const deleteLocation = async (req: AuthRequest, res: Response) => {
     await locationService.deleteLocation(locationId, req.user.id);
 
     res.status(204).send();
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Delete location error:', error);
 
     if (error instanceof AppError) {
@@ -100,7 +100,7 @@ export const getAllUserLocations = async (req: AuthRequest, res: Response) => {
     const locations = await locationService.getAllUserLocations(req.user.id);
 
     res.json(locations);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Get all user locations error:', error);
 
     if (error instanceof AppError) {
@@ -141,7 +141,7 @@ export const getPublicLocationsNearby = async (req: Request, res: Response) => {
     );
 
     res.json(locations);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Get public locations nearby error:', error);
     res.status(500).json({ message: '位置情報の取得に失敗しました' });
   }

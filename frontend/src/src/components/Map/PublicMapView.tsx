@@ -34,15 +34,18 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
   const [mapInitialized, setMapInitialized] = useState(false);
 
   // 日記ごとにグループ化された位置情報
-  const locationsByDiary: { [key: number]: DiaryLocation[] } = {};
+  const locationsByDiary = useMemo(() => {
+    const result: { [key: number]: DiaryLocation[] } = {};
 
-  // 位置情報を日記IDごとにグループ化
-  locations.forEach((location) => {
-    if (!locationsByDiary[location.diaryId]) {
-      locationsByDiary[location.diaryId] = [];
-    }
-    locationsByDiary[location.diaryId].push(location);
-  });
+    locations.forEach((location) => {
+      if (!result[location.diaryId]) {
+        result[location.diaryId] = [];
+      }
+      result[location.diaryId].push(location);
+    });
+
+    return result;
+  }, [locations]);
 
   // マップの初期化
   useEffect(() => {

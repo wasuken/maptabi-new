@@ -1,7 +1,5 @@
 import pool from '../../../config/database';
 import * as diaryService from '../../../services/diary.service';
-import { mockDiaries } from '../../fixtures/diaries';
-import { mockLocations } from '../../fixtures/locations';
 
 // データベースのモック
 jest.mock('../../../config/database', () => {

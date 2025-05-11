@@ -1,5 +1,5 @@
 // src/pages/PublicMapPage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PublicMapView } from '../components/Map';
 import MarkerLegend from '../components/Map/MarkerLegend';
 import * as diaryService from '../services/diary';
@@ -59,9 +59,11 @@ const PublicMapPage: React.FC = () => {
       const nearbyLocations = await diaryService.getNearbyPublicLocations(lat, lng, radiusKm);
 
       setLocations(nearbyLocations);
-    } catch (err: any) {
-      setError(err.message || 'データの取得に失敗しました');
+    } catch (err: ApiError | unknown) {
+      const error = err as ApiError;
+      setError(error.response?.data?.message || error.message || 'データの取得に失敗しました');
       setLocations([]);
+      throw err;
     } finally {
       setLoading(false);
     }
