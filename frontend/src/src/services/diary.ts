@@ -40,3 +40,16 @@ export const getDiaryLocations = async (diaryId: number) => {
   const response = await api.get(`/diaries/${diaryId}/locations`);
   return response.data;
 };
+
+export const getNearbyPublicLocations = async (
+  latitude: number,
+  longitude: number,
+  radiusKm = 5,
+  maxDiaries = 30,
+  maxLocationsPerDiary = 50
+) => {
+  const response = await api.get(`/locations/public/nearby`, {
+    params: { latitude, longitude, radiusKm, maxDiaries, maxLocationsPerDiary },
+  });
+  return response.data;
+};

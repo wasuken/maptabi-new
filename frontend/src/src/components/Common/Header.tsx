@@ -27,6 +27,9 @@ const Header: React.FC = () => {
               <Link to="/map">地図</Link>
             </li>
             <li>
+              <Link to="/public-map">公開マップ</Link>
+            </li>
+            <li>
               <Link to="/diary/new">新規作成</Link>
             </li>
           </ul>

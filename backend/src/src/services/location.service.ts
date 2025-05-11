@@ -138,3 +138,79 @@ export const getAllUserLocations = async (userId: number): Promise<DiaryLocation
     client.release();
   }
 };
+
+export const getPublicLocationsNearby = async (
+  latitude: number,
+  longitude: number,
+  radiusKm: number,
+  maxDiaries: number = 30,
+  maxLocationsPerDiary: number = 50
+): Promise<DiaryLocation[]> => {
+  const client = await pool.connect();
+
+  try {
+    // 指定された座標から特定の距離内の公開日記の位置情報を取得
+    // 1. まず対象となる日記IDを取得 (公開フラグがtrueのもののみ)
+    // 2. 各日記の位置情報について距離でフィルタリング
+    // 3. 日記ごとの上限と全体の上限を適用
+    const query = `
+      WITH nearby_diaries AS (
+        SELECT DISTINCT d.id, d.title, d.user_id, d.created_at
+        FROM diaries d
+        JOIN locations l ON d.id = l.diary_id
+        WHERE d.is_public = TRUE
+        AND ST_DWithin(
+          l.coordinates::geography,
+          ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+          $3 * 1000
+        )
+        ORDER BY d.created_at DESC
+        LIMIT $4
+      ),
+      limited_locations AS (
+        SELECT l.*, d.title as diary_title, d.user_id,
+               ST_X(l.coordinates::geometry) as longitude,
+               ST_Y(l.coordinates::geometry) as latitude,
+               row_number() OVER (PARTITION BY l.diary_id ORDER BY l.order_index) as rn
+        FROM locations l
+        JOIN nearby_diaries d ON l.diary_id = d.id
+        WHERE ST_DWithin(
+          l.coordinates::geography,
+          ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+          $3 * 1000
+        )
+      )
+      SELECT * FROM limited_locations
+      WHERE rn <= $5
+      ORDER BY diary_id, order_index;
+    `;
+    const result = await client.query(query, [
+      longitude,
+      latitude,
+      radiusKm,
+      maxDiaries,
+      maxLocationsPerDiary,
+    ]);
+
+    // 応答フォーマットの変換（スネークケース→キャメルケース）
+    return result.rows.map((row) => ({
+      id: row.id,
+      diaryId: row.diary_id,
+      name: row.name,
+      coordinates: row.coordinates,
+      latitude: row.latitude,
+      longitude: row.longitude,
+      altitude: row.altitude,
+      recordedAt: row.recorded_at,
+      orderIndex: row.order_index,
+      createdAt: row.created_at,
+      diaryTitle: row.diary_title,
+      userId: row.user_id,
+    }));
+  } catch (error) {
+    logger.error('Get public locations nearby error:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};

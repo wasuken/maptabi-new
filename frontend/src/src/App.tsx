@@ -10,6 +10,7 @@ import DiaryFormPage from './pages/DiaryFormPage';
 import DiaryDetailPage from './pages/DiaryDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import PublicMapPage from './pages/PublicMapPage';
 
 // レイアウトコンポーネント
 import Layout from './components/Common/Layout';
@@ -45,6 +46,7 @@ const App: React.FC = () => {
           >
             <Route index element={<HomePage />} />
             <Route path="map" element={<MapPage />} />
+            <Route path="public-map" element={<PublicMapPage />} />
             <Route path="diary/new" element={<DiaryFormPage />} />
             <Route path="diary/edit/:id" element={<DiaryFormPage isEditing />} />
             <Route path="diary/:id" element={<DiaryDetailPage />} />

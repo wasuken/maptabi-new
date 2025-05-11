@@ -110,3 +110,39 @@ export const getAllUserLocations = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: '位置情報の取得に失敗しました' });
   }
 };
+
+export const getPublicLocationsNearby = async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // パラメータの取得と検証
+    const latitude = parseFloat(req.query.latitude as string);
+    const longitude = parseFloat(req.query.longitude as string);
+    const radiusKm = parseFloat(req.query.radiusKm as string) || 5; // デフォルト5km
+    const maxDiaries = parseInt(req.query.maxDiaries as string) || 30; // デフォルト30件
+    const maxLocationsPerDiary = parseInt(req.query.maxLocationsPerDiary as string) || 50; // デフォルト50件
+
+    if (isNaN(latitude) || isNaN(longitude)) {
+      return res.status(400).json({
+        message: '緯度・経度は必須で、有効な数値である必要があります',
+      });
+    }
+
+    // 位置情報の取得
+    const locations = await locationService.getPublicLocationsNearby(
+      latitude,
+      longitude,
+      radiusKm,
+      maxDiaries,
+      maxLocationsPerDiary
+    );
+
+    res.json(locations);
+  } catch (error: any) {
+    logger.error('Get public locations nearby error:', error);
+    res.status(500).json({ message: '位置情報の取得に失敗しました' });
+  }
+};
