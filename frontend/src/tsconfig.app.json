@@ -12,6 +12,8 @@
       "@/*": ["src/*"]
     },
 
+    "types": ["cypress"],
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

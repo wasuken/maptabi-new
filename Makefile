@@ -1,10 +1,17 @@
-.PHONY: fmt test up
+.PHONY: fmt test up frontend-test backend-test
 fmt:
 	docker compose exec frontend npm run format
 	docker compose exec backend npm run format
 
 test:
-	docker compose exec backend npm test
+	make frontend-test
+	make backend-test
 
 up:
 	docker compose up -d
+
+frontend-test:
+	docker compose run --rm cypress
+
+backend-test:
+	docker compose exec backend npm test

@@ -1,4 +1,15 @@
 services:
+  cypress:
+    image: cypress/included:14.3.3
+    depends_on:
+      - frontend
+    environment:
+      - CYPRESS_baseUrl=http://localhost:3333
+    working_dir: /e2e
+    volumes:
+      - ./frontend/src:/e2e
+    network_mode: "service:frontend"
+
   frontend:
     build:
       context: ./frontend
