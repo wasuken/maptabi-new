@@ -3,6 +3,7 @@ import { DiariesMapView } from '../components/Map';
 import MarkerLegend from '../components/Map/MarkerLegend';
 import * as diaryService from '../services/diary';
 import { DiaryLocation } from '../types/location';
+import { ApiError } from '../types/error';
 import { Diary } from '../types/diary';
 
 const MapPage: React.FC = () => {

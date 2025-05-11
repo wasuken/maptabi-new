@@ -2,19 +2,10 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { User } from '../types/user';
 import * as authService from '../services/auth';
 import { AuthContext } from './AuthContextType';
+import { ApiError } from '../types/error';
 
 interface AuthProviderProps {
   children: ReactNode;
-}
-
-// APIエラー型の定義
-interface ApiError {
-  message: string;
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {

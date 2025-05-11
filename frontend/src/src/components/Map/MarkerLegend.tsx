@@ -1,4 +1,5 @@
 import React from 'react';
+import './MarkerLegend.css';
 
 interface MarkerLegendProps {
   className?: string;
@@ -27,71 +28,6 @@ const MarkerLegend: React.FC<MarkerLegendProps> = ({ className = '' }) => {
         </div>
       </div>
       <p>※同じ色のマーカーと線は同じ日記に属する位置情報です</p>
-      <style tsx="true">{`
-        .marker-legend {
-          background-color: white;
-          padding: 1rem;
-          border-radius: 8px;
-          margin-top: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .legend-items {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1rem;
-          margin: 1rem 0;
-        }
-
-        .legend-item {
-          display: flex;
-          align-items: center;
-          margin-bottom: 0.5rem;
-          min-width: 200px;
-        }
-
-        .legend-marker {
-          width: 24px;
-          height: 24px;
-          margin-right: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: bold;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        .start-marker {
-          background-color: #3887be;
-          clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-        }
-
-        .circle-marker {
-          background-color: #3887be;
-          border-radius: 50%;
-          font-size: 12px;
-        }
-
-        .end-marker {
-          background-color: #3887be;
-          border-radius: 4px;
-          position: relative;
-        }
-
-        .end-marker:after {
-          content: 'E';
-          position: absolute;
-          font-size: 12px;
-        }
-
-        .single-marker {
-          background-color: #3887be;
-          border-radius: 4px;
-          transform: rotate(45deg);
-          font-size: 12px;
-        }
-      `}</style>
     </div>
   );
 };

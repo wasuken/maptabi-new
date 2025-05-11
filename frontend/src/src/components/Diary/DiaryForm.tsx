@@ -52,8 +52,11 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
               orderIndex: loc.orderIndex,
             }))
           );
-        } catch (err: Error) {
-          setError(err.message || '日記データの取得に失敗しました');
+        } catch (err: unknown | Error) {
+          if (err instanceof Error) {
+            setError(err.message || '日記データの取得に失敗しました');
+          }
+          setError('日記データの取得に失敗しました');
         } finally {
           setLoading(false);
         }
@@ -132,8 +135,11 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
       }
 
       navigate('/diaries');
-    } catch (err: Error) {
-      setError(err.message || '日記の保存に失敗しました');
+    } catch (err: unknown | Error) {
+      if (err instanceof Error) {
+        setError(err.message || '日記の保存に失敗しました');
+      }
+      setError('日記の保存に失敗しました');
     } finally {
       setLoading(false);
     }

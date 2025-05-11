@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { ApiError } from '../types/error';
 
 const LoginPage: React.FC = () => {
   const { login, loading, error } = useAuth();
@@ -24,8 +25,7 @@ const LoginPage: React.FC = () => {
       navigate('/');
     } catch (err: ApiError | unknown) {
       const error = err as ApiError;
-      setError(error.response?.data?.message || error.message || 'ログインに失敗しました');
-      setLocations([]);
+      setLocalError(error.response?.data?.message || error.message || 'ログインに失敗しました');
       throw err;
     }
   };

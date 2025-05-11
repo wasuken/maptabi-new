@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Diary } from '../../types/diary';
@@ -211,11 +211,14 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
       });
 
       // バウンズが設定されていれば、すべてのマーカーが見えるようにマップをフィット
-      if (bounds && !bounds.isEmpty()) {
-        map.current?.fitBounds(bounds, {
-          padding: 50,
-          maxZoom: 15,
-        });
+      if (bounds) {
+        const boundsObj = bounds as unknown;
+        if (boundsObj instanceof maplibregl.LngLatBounds && !boundsObj.isEmpty()) {
+          map.current?.fitBounds(bounds, {
+            padding: 50,
+            maxZoom: 15,
+          });
+        }
       }
     };
 

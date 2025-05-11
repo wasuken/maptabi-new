@@ -1,5 +1,5 @@
 // src/components/Map/PublicMapView.tsx
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { DiaryLocation } from '../../types/location';
@@ -170,9 +170,10 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
             markerTypeText = `地点 ${markerNumber}`;
         }
 
+        // TODO 日記タイトルを
         const popupContent = `
           <div>
-            <h3>${location.diaryTitle || '無題の日記'}</h3>
+            <h3>${'無題の日記'}</h3>
             <p>${markerTypeText}: ${location.name || '名称なし'}</p>
             <p>${location.recordedAt ? new Date(location.recordedAt).toLocaleString() : '日時不明'}</p>
             <a href="/diary/${diaryId}" target="_blank">詳細を見る</a>
@@ -218,11 +219,14 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
     });
 
     // バウンズが設定されていれば、すべてのマーカーが見えるようにマップをフィット
-    if (bounds && !bounds.isEmpty()) {
-      map.current?.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 15,
-      });
+    if (bounds) {
+      const boundsObj = bounds as unknown;
+      if (boundsObj instanceof maplibregl.LngLatBounds && !boundsObj.isEmpty()) {
+        map.current?.fitBounds(bounds, {
+          padding: 50,
+          maxZoom: 15,
+        });
+      }
     }
   }, [locations, locationsByDiary, mapInitialized]);
 

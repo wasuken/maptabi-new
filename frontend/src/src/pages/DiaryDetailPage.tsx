@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import * as diaryService from '../services/diary';
 import { DiaryWithLocations } from '../types/diary';
+import { ApiError } from '../types/error';
 import MapView from '../components/Map/MapView';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';

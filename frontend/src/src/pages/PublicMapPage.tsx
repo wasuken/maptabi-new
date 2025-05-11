@@ -1,9 +1,11 @@
 // src/pages/PublicMapPage.tsx
+import './PublicMapPage.css';
 import React, { useState } from 'react';
 import { PublicMapView } from '../components/Map';
 import MarkerLegend from '../components/Map/MarkerLegend';
 import * as diaryService from '../services/diary';
 import { DiaryLocation } from '../types/location';
+import { ApiError } from '../types/error';
 import { useGeolocation } from '../hooks/useGeolocation';
 
 const PublicMapPage: React.FC = () => {
@@ -155,54 +157,6 @@ const PublicMapPage: React.FC = () => {
           選択した位置の周辺にある公開日記の位置情報を表示しています。緯度・経度を入力して検索するか、マップをクリックして位置を指定できます。
         </p>
       </div>
-
-      <style jsx>{`
-        .search-form {
-          background-color: white;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          margin-bottom: 20px;
-        }
-
-        .form-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 15px;
-          margin-bottom: 15px;
-        }
-
-        .form-group {
-          flex: 1;
-          min-width: 150px;
-        }
-
-        .form-actions {
-          display: flex;
-          gap: 10px;
-        }
-
-        .help-text {
-          font-size: 14px;
-          color: #666;
-          margin-top: 10px;
-        }
-
-        .no-results {
-          background-color: #f8f9fa;
-          padding: 15px;
-          border-radius: 8px;
-          text-align: center;
-          margin-top: 20px;
-        }
-
-        .results-info {
-          background-color: #e3f2fd;
-          padding: 15px;
-          border-radius: 8px;
-          margin-top: 20px;
-        }
-      `}</style>
     </div>
   );
 };

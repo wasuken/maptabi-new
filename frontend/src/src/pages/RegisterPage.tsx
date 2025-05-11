@@ -24,11 +24,9 @@ const RegisterPage: React.FC = () => {
     try {
       await register(email, password, displayName);
       navigate('/');
-    } catch (err: Error) {
+    } catch (err: unknown) {
       setLocalError('エラー');
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
