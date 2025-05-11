@@ -127,12 +127,12 @@ jobs:
             echo "author=$(git log -1 ${{ github.event.pull_request.head.sha }} --pretty=format:'%an')" >> $GITHUB_OUTPUT
             echo "message=$(git log -1 ${{ github.event.pull_request.head.sha }} --pretty=format:'%s')" >> $GITHUB_OUTPUT
             echo "changes=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | wc -l)" >> $GITHUB_OUTPUT
-            echo "files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | sort | head -10 | sed 's/^/- /' | tr '\n' '\n' | sed 's/\n$//')" >> $GITHUB_OUTPUT
+            echo "files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | sort | head -10 | sed 's/^/- /')" >> $GITHUB_OUTPUT
           else
             echo "author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
             echo "message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
             echo "changes=$(git diff --name-only HEAD~1 | wc -l)" >> $GITHUB_OUTPUT
-            echo "files_changed=$(git diff --name-only HEAD~1 | sort | head -10 | sed 's/^/- /' | tr '\n' '\n' | sed 's/\n$//')" >> $GITHUB_OUTPUT
+            echo "files_changed=$(git diff --name-only HEAD~1 | sort | head -10 | sed 's/^/- /')" >> $GITHUB_OUTPUT
           fi
       
       - name: Format date time
