@@ -85,6 +85,8 @@ jobs:
       
       - name: Run E2E tests
         uses: cypress-io/github-action@v5
+        env:
+          CYPRESS_baseUrl: http://localhost:4173
         with:
           working-directory: frontend/src
           build: npm run build
@@ -92,9 +94,7 @@ jobs:
           wait-on: 'http://localhost:4173'
           browser: chrome
           headless: true
-          env:
-            CYPRESS_baseUrl: http://localhost:4173
-  
+
   promote-to-main:
     needs: [backend-tests, frontend-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && needs.backend-tests.result == 'success' && needs.frontend-tests.result == 'success'
