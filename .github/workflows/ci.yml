@@ -119,7 +119,7 @@ jobs:
   
   discord-notification:
     needs: [backend-tests, frontend-tests, promote-to-main]
-    if: always() # テストの成功/失敗に関わらず常に通知
+    if: always()  # テストの成功/失敗に関わらず常に通知
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -129,54 +129,49 @@ jobs:
       - name: Get commit details
         id: commit-details
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "author=$(git log -1 ${{ github.event.pull_request.head.sha }} --pretty=format:'%an')" >> $GITHUB_OUTPUT
-            echo "message=$(git log -1 ${{ github.event.pull_request.head.sha }} --pretty=format:'%s')" >> $GITHUB_OUTPUT
-            echo "changes=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | wc -l)" >> $GITHUB_OUTPUT
-            echo "files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | sort | head -10 | sed 's/^/- /')" >> $GITHUB_OUTPUT
-          else
-            echo "author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-            echo "message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
-            echo "changes=$(git diff --name-only HEAD~1 | wc -l)" >> $GITHUB_OUTPUT
-            echo "files_changed=$(git diff --name-only HEAD~1 | sort | head -10 | sed 's/^/- /')" >> $GITHUB_OUTPUT
-          fi
+          # イベントタイプによって取得方法を分岐
+          SHA=$([ "${{ github.event_name }}" == "pull_request" ] && echo "${{ github.event.pull_request.head.sha }}" || echo "HEAD")
+          BASE=$([ "${{ github.event_name }}" == "pull_request" ] && echo "${{ github.event.pull_request.base.sha }}" || echo "HEAD~1")
+          
+          # 各種情報を取得
+          echo "author=$(git log -1 $SHA --pretty=format:'%an')" >> $GITHUB_OUTPUT
+          echo "message=$(git log -1 $SHA --pretty=format:'%s')" >> $GITHUB_OUTPUT
+          echo "changes=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | wc -l)" >> $GITHUB_OUTPUT
+          echo "files_changed=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | sort | head -10 | sed 's/^/- /')" >> $GITHUB_OUTPUT
       
-      - name: Format date time
-        id: format-time
-        run: |
-          echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
-      
-      - name: Set status emojis and colors
+      - name: Set status info
         id: status
         run: |
-          # Backend tests status
-          if [[ "${{ needs.backend-tests.result }}" == "success" ]]; then
-            echo "backend_emoji=✅" >> $GITHUB_OUTPUT
-          else
-            echo "backend_emoji=❌" >> $GITHUB_OUTPUT
-          fi
+          # 各ジョブのステータスを絵文字で表現
+          STATUS_MAP=("success:✅" "failure:❌" "skipped:⏭️")
           
-          # Frontend tests status
-          if [[ "${{ needs.frontend-tests.result }}" == "success" ]]; then
-            echo "frontend_emoji=✅" >> $GITHUB_OUTPUT
-          else
-            echo "frontend_emoji=❌" >> $GITHUB_OUTPUT
-          fi
+          # 各ジョブのステータスをセット
+          for JOB in backend frontend promote; do
+            RESULT="${{needs.${JOB}-tests.result}}"
+            [ "$JOB" == "promote" ] && RESULT="${{needs.promote-to-main.result}}"
+            
+            EMOJI="❌"  # デフォルト値
+            TEXT="失敗"
+            
+            for MAPPING in "${STATUS_MAP[@]}"; do
+              KEY="${MAPPING%%:*}"
+              VALUE="${MAPPING#*:}"
+              if [ "$RESULT" == "$KEY" ]; then
+                EMOJI="$VALUE"
+                [ "$KEY" == "skipped" ] && TEXT="スキップ" || TEXT="$KEY"
+                break
+              fi
+            done
+            
+            echo "${JOB}_emoji=$EMOJI" >> $GITHUB_OUTPUT
+            [ "$JOB" == "promote" ] && echo "promote_text=$TEXT" >> $GITHUB_OUTPUT
+          done
           
-          # Promote to main status
-          if [[ "${{ needs.promote-to-main.result }}" == "success" ]]; then
-            echo "promote_emoji=✅" >> $GITHUB_OUTPUT
-            echo "promote_text=成功" >> $GITHUB_OUTPUT
-          elif [[ "${{ needs.promote-to-main.result }}" == "skipped" ]]; then
-            echo "promote_emoji=⏭️" >> $GITHUB_OUTPUT
-            echo "promote_text=スキップ" >> $GITHUB_OUTPUT
-          else
-            echo "promote_emoji=❌" >> $GITHUB_OUTPUT
-            echo "promote_text=失敗" >> $GITHUB_OUTPUT
-          fi
-          
-          # Overall status
-          if [[ "${{ needs.backend-tests.result }}" == "success" && "${{ needs.frontend-tests.result }}" == "success" && ("${{ needs.promote-to-main.result }}" == "success" || "${{ needs.promote-to-main.result }}" == "skipped") ]]; then
+          # 全体のステータスを設定
+          if [[ "${{ needs.backend-tests.result }}" == "success" && 
+                "${{ needs.frontend-tests.result }}" == "success" && 
+                ("${{ needs.promote-to-main.result }}" == "success" || 
+                 "${{ needs.promote-to-main.result }}" == "skipped") ]]; then
             echo "overall=success" >> $GITHUB_OUTPUT
             echo "color=3066993" >> $GITHUB_OUTPUT
             echo "emoji=✅" >> $GITHUB_OUTPUT
@@ -197,7 +192,7 @@ jobs:
             {
               "embeds": [{
                 "title": "${{ steps.status.outputs.emoji }} ワークフロー結果: ${{ github.workflow }}",
-                "description": "**ビルド #${{ github.run_number }}** (${{ steps.format-time.outputs.date }})\n\n**リポジトリ:** [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})\n**ブランチ:** `${{ github.ref_name }}`\n**イベント:** ${{ github.event_name }}",
+                "description": "**ビルド #${{ github.run_number }}** ($(date +'%Y-%m-%d %H:%M:%S'))\n\n**リポジトリ:** [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})\n**ブランチ:** `${{ github.ref_name }}`\n**イベント:** ${{ github.event_name }}",
                 "color": ${{ steps.status.outputs.color }},
                 "fields": [
                   {
@@ -224,3 +219,4 @@ jobs:
                 "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
               }]
             }
+  
