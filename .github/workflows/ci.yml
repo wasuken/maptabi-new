@@ -89,6 +89,7 @@ jobs:
       - name: Run E2E tests
         uses: cypress-io/github-action@v6
         with:
+          config: baseUrl=http://localhost:4173
           working-directory: frontend/src
           build: npm run build
           start: npm run preview
