@@ -1,13 +1,15 @@
 services:
   cypress:
-    image: cypress/included:14.3.3
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.cypress
     depends_on:
       - frontend
-    environment:
-      - CYPRESS_baseUrl=http://localhost:3333
     working_dir: /e2e
     volumes:
       - ./frontend/src:/e2e
+    environment:
+      - CYPRESS_baseUrl=http://localhost:3333
     network_mode: "service:frontend"
 
   frontend:

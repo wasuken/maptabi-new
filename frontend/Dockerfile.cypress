@@ -1,0 +1,12 @@
+FROM cypress/included:latest
+
+WORKDIR /e2e
+
+# package.jsonをコピーして依存関係をインストール
+COPY ./src/package*.json ./
+RUN npm install
+
+COPY ./src/ ./
+
+# テスト実行
+CMD ["cypress", "run"]
