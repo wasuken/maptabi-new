@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ dev, main ]
 
+permissions:
+  contents: write 
+
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
@@ -56,8 +59,8 @@ jobs:
           npm run lint
   
   frontend-tests:
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-24.04
+
     steps:
       - uses: actions/checkout@v3
       
@@ -82,18 +85,18 @@ jobs:
         run: |
           cd frontend/src
           npm test || echo "No test script found"
-      
+
       - name: Run E2E tests
-        uses: cypress-io/github-action@v5
-        env:
-          CYPRESS_baseUrl: http://localhost:4173
+        uses: cypress-io/github-action@v6
         with:
           working-directory: frontend/src
           build: npm run build
           start: npm run preview
           wait-on: 'http://localhost:4173'
+          wait-on-timeout: 300
           browser: chrome
           headless: true
+          spec: 'cypress/e2e/*.cy.{js,ts}'
 
   promote-to-main:
     needs: [backend-tests, frontend-tests]
