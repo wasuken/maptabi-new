@@ -117,6 +117,7 @@ jobs:
           git merge --ff-only origin/dev
           git push origin main
   
+
   discord-notification:
     needs: [backend-tests, frontend-tests, promote-to-main]
     if: always()  # テストの成功/失敗に関わらず常に通知
@@ -134,52 +135,56 @@ jobs:
           BASE=$([ "${{ github.event_name }}" == "pull_request" ] && echo "${{ github.event.pull_request.base.sha }}" || echo "HEAD~1")
           
           # 各種情報を取得
-          echo "author=$(git log -1 $SHA --pretty=format:'%an')" >> $GITHUB_OUTPUT
-          echo "message=$(git log -1 $SHA --pretty=format:'%s')" >> $GITHUB_OUTPUT
-          echo "changes=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | wc -l)" >> $GITHUB_OUTPUT
-          echo "files_changed=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | sort | head -10 | sed 's/^/- /')" >> $GITHUB_OUTPUT
+          AUTHOR=$(git log -1 $SHA --pretty=format:'%an')
+          MESSAGE=$(git log -1 $SHA --pretty=format:'%s')
+          CHANGES=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | wc -l)
+          FILES_CHANGED=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | sort | head -10 | sed 's/^/- /')
+          
+          echo "author=$AUTHOR" >> $GITHUB_OUTPUT
+          echo "message=$MESSAGE" >> $GITHUB_OUTPUT
+          echo "changes=$CHANGES" >> $GITHUB_OUTPUT
+          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
       
       - name: Set status info
         id: status
         run: |
-          # 各ジョブのステータスを絵文字で表現
-          STATUS_MAP=("success:✅" "failure:❌" "skipped:⏭️")
+          # ステータス絵文字の設定
+          backend_result="${{ needs.backend-tests.result }}"
+          frontend_result="${{ needs.frontend-tests.result }}"
+          promote_result="${{ needs.promote-to-main.result }}"
           
-          # 各ジョブのステータスをセット
-          for JOB in backend frontend promote; do
-            RESULT="${{needs.${JOB}-tests.result}}"
-            [ "$JOB" == "promote" ] && RESULT="${{needs.promote-to-main.result}}"
-            
-            EMOJI="❌"  # デフォルト値
-            TEXT="失敗"
-            
-            for MAPPING in "${STATUS_MAP[@]}"; do
-              KEY="${MAPPING%%:*}"
-              VALUE="${MAPPING#*:}"
-              if [ "$RESULT" == "$KEY" ]; then
-                EMOJI="$VALUE"
-                [ "$KEY" == "skipped" ] && TEXT="スキップ" || TEXT="$KEY"
-                break
-              fi
-            done
-            
-            echo "${JOB}_emoji=$EMOJI" >> $GITHUB_OUTPUT
-            [ "$JOB" == "promote" ] && echo "promote_text=$TEXT" >> $GITHUB_OUTPUT
-          done
+          # バックエンドとフロントエンドのステータス
+          [ "$backend_result" == "success" ] && backend_emoji="✅" || backend_emoji="❌"
+          [ "$frontend_result" == "success" ] && frontend_emoji="✅" || frontend_emoji="❌"
           
-          # 全体のステータスを設定
-          if [[ "${{ needs.backend-tests.result }}" == "success" && 
-                "${{ needs.frontend-tests.result }}" == "success" && 
-                ("${{ needs.promote-to-main.result }}" == "success" || 
-                 "${{ needs.promote-to-main.result }}" == "skipped") ]]; then
-            echo "overall=success" >> $GITHUB_OUTPUT
-            echo "color=3066993" >> $GITHUB_OUTPUT
-            echo "emoji=✅" >> $GITHUB_OUTPUT
+          # デプロイステータス
+          if [ "$promote_result" == "success" ]; then
+            promote_emoji="✅"
+            promote_text="成功"
+          elif [ "$promote_result" == "skipped" ]; then
+            promote_emoji="⏭️"
+            promote_text="スキップ"
           else
-            echo "overall=failure" >> $GITHUB_OUTPUT
-            echo "color=15158332" >> $GITHUB_OUTPUT
-            echo "emoji=❌" >> $GITHUB_OUTPUT
+            promote_emoji="❌"
+            promote_text="失敗"
           fi
+          
+          # 全体的なステータス
+          if [ "$backend_result" == "success" ] && [ "$frontend_result" == "success" ] && 
+             ([ "$promote_result" == "success" ] || [ "$promote_result" == "skipped" ]); then
+            overall_emoji="✅"
+            color="3066993"
+          else
+            overall_emoji="❌"
+            color="15158332"
+          fi
+          
+          echo "backend_emoji=$backend_emoji" >> $GITHUB_OUTPUT
+          echo "frontend_emoji=$frontend_emoji" >> $GITHUB_OUTPUT
+          echo "promote_emoji=$promote_emoji" >> $GITHUB_OUTPUT
+          echo "promote_text=$promote_text" >> $GITHUB_OUTPUT
+          echo "overall_emoji=$overall_emoji" >> $GITHUB_OUTPUT
+          echo "color=$color" >> $GITHUB_OUTPUT
       
       - name: Send Discord notification
         uses: Ilshidur/action-discord@master
@@ -189,34 +194,28 @@ jobs:
           DISCORD_AVATAR: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         with:
           args: |
-            {
-              "embeds": [{
-                "title": "${{ steps.status.outputs.emoji }} ワークフロー結果: ${{ github.workflow }}",
-                "description": "**ビルド #${{ github.run_number }}** ($(date +'%Y-%m-%d %H:%M:%S'))\n\n**リポジトリ:** [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})\n**ブランチ:** `${{ github.ref_name }}`\n**イベント:** ${{ github.event_name }}",
-                "color": ${{ steps.status.outputs.color }},
-                "fields": [
-                  {
-                    "name": "コミット情報",
-                    "value": "**メッセージ:** ${{ steps.commit-details.outputs.message }}\n**著者:** ${{ steps.commit-details.outputs.author }}\n**変更ファイル数:** ${{ steps.commit-details.outputs.changes }}"
-                  },
-                  {
-                    "name": "テスト結果",
-                    "value": "${{ steps.status.outputs.backend_emoji }} **バックエンド:** ${{ needs.backend-tests.result }}\n${{ steps.status.outputs.frontend_emoji }} **フロントエンド:** ${{ needs.frontend-tests.result }}"
-                  },
-                  {
-                    "name": "デプロイ状況",
-                    "value": "${{ steps.status.outputs.promote_emoji }} **メインブランチへのプロモート:** ${{ steps.status.outputs.promote_text }}"
-                  },
-                  {
-                    "name": "変更ファイル (最大10件)",
-                    "value": "```\n${{ steps.commit-details.outputs.files_changed }}\n```"
-                  }
-                ],
-                "footer": {
-                  "text": "GitHub Actions"
-                },
-                "timestamp": "${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at }}",
-                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-              }]
-            }
-  
+            ${{ steps.status.outputs.overall_emoji }} **ワークフロー結果: ${{ github.workflow }}**
+            
+            **ビルド #${{ github.run_number }}** ($(date +"%Y-%m-%d %H:%M:%S"))
+            **リポジトリ:** [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})
+            **ブランチ:** `${{ github.ref_name }}`
+            **イベント:** ${{ github.event_name }}
+            
+            **コミット情報:**
+            • メッセージ: ${{ steps.commit-details.outputs.message }}
+            • 著者: ${{ steps.commit-details.outputs.author }}
+            • 変更ファイル数: ${{ steps.commit-details.outputs.changes }}
+            
+            **テスト結果:**
+            ${{ steps.status.outputs.backend_emoji }} **バックエンド:** ${{ needs.backend-tests.result }}
+            ${{ steps.status.outputs.frontend_emoji }} **フロントエンド:** ${{ needs.frontend-tests.result }}
+            
+            **デプロイ状況:**
+            ${{ steps.status.outputs.promote_emoji }} **メインブランチへのプロモート:** ${{ steps.status.outputs.promote_text }}
+            
+            **変更ファイル (最大10件):**
+            ```
+            ${{ steps.commit-details.outputs.files_changed }}
+            ```
+            
+            [ワークフロー実行詳細](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
