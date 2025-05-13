@@ -92,6 +92,8 @@ jobs:
           wait-on: 'http://localhost:4173'
           browser: chrome
           headless: true
+          env:
+            CYPRESS_baseUrl: http://localhost:4173
   
   promote-to-main:
     needs: [backend-tests, frontend-tests]
