@@ -71,13 +71,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'frontend/src/package-lock.json'
       
-      - name: Setup and install dependencies
+      - name: Install dependencies
         run: |
           cd frontend/src
-          rm -rf node_modules
-          # package-lock.jsonを再生成するためにnpm installを実行
-          npm install
-          # 生成されたpackage-lock.jsonを使用してnpm ciを実行
           npm ci
       
       - name: Run ESLint
