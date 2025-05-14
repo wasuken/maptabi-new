@@ -2,7 +2,15 @@ import React, { useRef, useEffect, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { DiaryLocation } from '../../types/location';
-import { MarkerType, createCustomMarker, initializeMapStyle, setupMap } from '../../utils/MapUtils';
+import { MapPin, Navigation, Layers, ZoomIn, ZoomOut } from 'lucide-react';
+
+// マーカータイプの列挙型（既存のものを使用）
+enum MarkerType {
+  START,
+  MIDDLE,
+  END,
+  SINGLE,
+}
 
 interface MapViewProps {
   locations?: DiaryLocation[];
@@ -11,15 +19,17 @@ interface MapViewProps {
   onMapClick?: (lat: number, lng: number) => void;
   height?: string;
   width?: string;
+  className?: string;
 }
 
 const MapView: React.FC<MapViewProps> = ({
   locations = [],
-  center,
-  zoom,
+  center = [139.6917, 35.6895], // デフォルトは東京
+  zoom = 13,
   onMapClick,
   height = '500px',
   width = '100%',
+  className = '',
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -31,10 +41,87 @@ const MapView: React.FC<MapViewProps> = ({
     if (map.current || !mapContainer.current) return;
 
     // スタイルを注入
-    styleElement.current = initializeMapStyle();
+    styleElement.current = document.createElement('style');
+    styleElement.current.innerHTML = `
+      .custom-marker {
+        cursor: pointer;
+      }
+      
+      .marker-start, .marker-end, .marker-circle, .marker-single {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        transition: transform 0.2s;
+      }
+      
+      .marker-start:hover, 
+      .marker-end:hover, 
+      .marker-circle:hover, 
+      .marker-single:hover {
+        transform: scale(1.2);
+        z-index: 10;
+      }
+    `;
+    document.head.appendChild(styleElement.current);
 
     // マップを初期化
-    map.current = setupMap(mapContainer.current, center, zoom);
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap Contributors',
+            maxzoom: 19,
+          },
+        },
+        layers: [
+          {
+            id: 'osm-tiles',
+            type: 'raster',
+            source: 'osm',
+            minzoom: 0,
+            maxzoom: 20,
+          },
+        ],
+      },
+      center: center,
+      zoom: zoom,
+    });
+
+    // コントロールの追加
+    map.current.addControl(
+      new maplibregl.NavigationControl({
+        showCompass: true,
+        visualizePitch: true,
+      }),
+      'top-right'
+    );
+    
+    map.current.addControl(
+      new maplibregl.ScaleControl({
+        maxWidth: 100,
+        unit: 'metric',
+      }),
+      'bottom-left'
+    );
+    
+    map.current.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+      }),
+      'top-right'
+    );
 
     // クリックイベント設定（マーカー追加用）
     if (onMapClick) {
@@ -99,7 +186,70 @@ const MapView: React.FC<MapViewProps> = ({
         const markerNumber = index + 1;
 
         // カスタムマーカーを作成
-        const markerElement = createCustomMarker(markerNumber, '#3887be', markerType);
+        const markerElement = document.createElement('div');
+        markerElement.className = 'custom-marker';
+
+        // マーカースタイル
+        let markerStyle = '';
+        let markerContent = '';
+        const color = '#3887be'; // デフォルトカラー
+
+        switch (markerType) {
+          case MarkerType.START:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            `;
+            markerContent = 'S';
+            break;
+          case MarkerType.END:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            `;
+            markerContent = 'E';
+            break;
+          case MarkerType.SINGLE:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              border-radius: 4px;
+              transform: rotate(45deg);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            `;
+            markerContent = `<div style="transform: rotate(-45deg);">★</div>`;
+            break;
+          default:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            `;
+            markerContent = `${markerNumber}`;
+        }
+
+        markerElement.innerHTML = `
+          <div class="marker-${markerType === MarkerType.START ? 'start' : markerType === MarkerType.END ? 'end' : markerType === MarkerType.SINGLE ? 'single' : 'circle'}" style="${markerStyle}">
+            <div class="marker-content">${markerContent}</div>
+          </div>
+        `;
 
         // マーカーを地図に追加
         const marker = new maplibregl.Marker({
@@ -125,10 +275,11 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         const popupContent = `
-          <div>
-            <h3>${location.name || markerTypeText}</h3>
-            <p>${markerTypeText}</p>
-            <p>${location.recordedAt ? new Date(location.recordedAt).toLocaleString() : '日時不明'}</p>
+          <div class="p-2">
+            <h3 class="font-bold text-sm">${location.name || markerTypeText}</h3>
+            <p class="text-xs text-gray-600">${markerTypeText}</p>
+            <p class="text-xs text-gray-600">${location.recordedAt ? new Date(location.recordedAt).toLocaleString() : '日時不明'}</p>
+            <p class="text-xs text-gray-600">緯度: ${location.latitude.toFixed(6)}<br>経度: ${location.longitude.toFixed(6)}</p>
           </div>
         `;
 
@@ -162,7 +313,7 @@ const MapView: React.FC<MapViewProps> = ({
           },
           paint: {
             'line-color': '#3887be',
-            'line-width': 5,
+            'line-width': 4,
             'line-opacity': 0.75,
           },
         });
@@ -198,16 +349,69 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [locations, mapInitialized]);
 
+  // カスタムコントロールボタン
+  const addCustomControl = (
+    icon: React.ReactNode,
+    title: string,
+    onClick: () => void,
+    position: string = 'top-left'
+  ) => {
+    if (!map.current) return;
+
+    const controlContainer = document.createElement('div');
+    controlContainer.className = `maplibregl-ctrl maplibregl-ctrl-group`;
+    controlContainer.style.margin = '10px';
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'maplibregl-ctrl-icon';
+    button.title = title;
+    button.addEventListener('click', onClick);
+
+    // ボタンに追加するスタイル
+    button.style.width = '30px';
+    button.style.height = '30px';
+    button.style.padding = '5px';
+    button.style.display = 'flex';
+    button.style.alignItems = 'center';
+    button.style.justifyContent = 'center';
+
+    // SVGアイコンをRenderしてHTMLに変換
+    const tempDiv = document.createElement('div');
+    const reactEl = document.createElement('span');
+    reactEl.innerHTML = '↺'; // フォールバックアイコン
+    tempDiv.appendChild(reactEl);
+    button.appendChild(tempDiv.firstChild!);
+
+    controlContainer.appendChild(button);
+    
+    // 位置に基づいてコントロールを配置
+    const container = map.current.getContainer();
+    const referenceControl = container.querySelector(`.maplibregl-ctrl-${position}`);
+    
+    if (referenceControl) {
+      container.insertBefore(controlContainer, referenceControl);
+    } else {
+      container.appendChild(controlContainer);
+    }
+
+    return controlContainer;
+  };
+
   return (
-    <div
-      ref={mapContainer}
-      style={{
-        width,
-        height,
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-      }}
-    />
+    <div className={`relative rounded-lg overflow-hidden ${className}`} style={{ height, width }}>
+      <div 
+        ref={mapContainer} 
+        className="w-full h-full" 
+      />
+      
+      {/* マップ上の追加UI要素（オプション） */}
+      {onMapClick && (
+        <div className="absolute bottom-4 left-4 bg-white bg-opacity-75 p-2 rounded-md shadow text-xs text-gray-700">
+          <p>地図をクリックして位置を追加</p>
+        </div>
+      )}
+    </div>
   );
 };
 

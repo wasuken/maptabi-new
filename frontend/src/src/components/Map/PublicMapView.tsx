@@ -1,15 +1,24 @@
-// src/components/Map/PublicMapView.tsx
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { DiaryLocation } from '../../types/location';
-import {
-  MarkerType,
-  getColorForDiary,
-  createCustomMarker,
-  initializeMapStyle,
-  setupMap,
-} from '../../utils/MapUtils';
+import { MapPin, Search, Layers, Compass } from 'lucide-react';
+
+// マーカータイプの列挙型 (既存のものを使用)
+enum MarkerType {
+  START,
+  MIDDLE,
+  END,
+  SINGLE,
+}
+
+// 日記ごとに一貫した色を割り当てるヘルパー関数
+const getColorForDiary = (diaryId: number): string => {
+  // 日記IDを基にしたシンプルなハッシュ
+  const hash = diaryId % 360;
+  // HSLカラーで彩度と明度を固定し、色相だけを変える
+  return `hsl(${hash}, 70%, 50%)`;
+};
 
 interface PublicMapViewProps {
   locations: DiaryLocation[];
@@ -18,15 +27,17 @@ interface PublicMapViewProps {
   onMapClick?: (lat: number, lng: number) => void;
   height?: string;
   width?: string;
+  className?: string;
 }
 
 const PublicMapView: React.FC<PublicMapViewProps> = ({
   locations = [],
-  center,
-  zoom,
+  center = [139.6917, 35.6895], // デフォルトは東京
+  zoom = 13,
   onMapClick,
   height = '500px',
   width = '100%',
+  className = '',
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -59,11 +70,113 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
 
     // スタイルを注入
     if (!styleElement.current) {
-      styleElement.current = initializeMapStyle();
+      styleElement.current = document.createElement('style');
+      styleElement.current.innerHTML = `
+        .custom-marker {
+          cursor: pointer;
+        }
+        
+        .marker-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          transition: transform 0.2s;
+        }
+        
+        .marker-container:hover {
+          transform: scale(1.2);
+          z-index: 10;
+        }
+        
+        .maplibregl-popup {
+          max-width: 250px !important;
+        }
+        
+        .public-diary-popup h3 {
+          font-weight: 600;
+          margin-bottom: 5px;
+          color: #333;
+        }
+        
+        .public-diary-popup p {
+          margin: 3px 0;
+          color: #666;
+          font-size: 12px;
+        }
+        
+        .public-diary-popup a {
+          color: #3b82f6;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          font-weight: 500;
+        }
+        
+        .public-diary-popup a:hover {
+          text-decoration: underline;
+        }
+      `;
+      document.head.appendChild(styleElement.current);
     }
 
     // マップを初期化
-    map.current = setupMap(mapContainer.current, center, zoom);
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap Contributors',
+            maxzoom: 19,
+          },
+        },
+        layers: [
+          {
+            id: 'osm-tiles',
+            type: 'raster',
+            source: 'osm',
+            minzoom: 0,
+            maxzoom: 20,
+          },
+        ],
+      },
+      center,
+      zoom,
+    });
+
+    // コントロールの追加
+    map.current.addControl(
+      new maplibregl.NavigationControl({
+        showCompass: true,
+        visualizePitch: true,
+      }),
+      'top-right'
+    );
+    
+    map.current.addControl(
+      new maplibregl.ScaleControl({
+        maxWidth: 100,
+        unit: 'metric',
+      }),
+      'bottom-left'
+    );
+    
+    map.current.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+      }),
+      'top-right'
+    );
 
     // クリックイベント設定
     if (onMapClick) {
@@ -144,8 +257,57 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
         // マーカー番号（1から始まる連番）
         const markerNumber = index + 1;
 
+        // マーカースタイル
+        let markerStyle = '';
+        let markerContent = '';
+
+        switch (markerType) {
+          case MarkerType.START:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+            `;
+            markerContent = 'S';
+            break;
+          case MarkerType.END:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              border-radius: 4px;
+            `;
+            markerContent = 'E';
+            break;
+          case MarkerType.SINGLE:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              border-radius: 4px;
+              transform: rotate(45deg);
+            `;
+            markerContent = `<div style="transform: rotate(-45deg);">★</div>`;
+            break;
+          default:
+            markerStyle = `
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              border-radius: 50%;
+            `;
+            markerContent = `${markerNumber}`;
+        }
+
         // カスタムマーカーを作成
-        const markerElement = createCustomMarker(markerNumber, color, markerType);
+        const markerElement = document.createElement('div');
+        markerElement.className = 'custom-marker';
+        markerElement.innerHTML = `
+          <div class="marker-container" style="${markerStyle}">
+            <div class="marker-content" style="display: flex; align-items: center; justify-content: center;">${markerContent}</div>
+          </div>
+        `;
 
         // マーカーを地図に追加
         const marker = new maplibregl.Marker({
@@ -170,13 +332,23 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
             markerTypeText = `地点 ${markerNumber}`;
         }
 
-        // TODO 日記タイトルを
+        // 日記タイトルとポップアップコンテンツ
         const popupContent = `
-          <div>
-            <h3>${'無題の日記'}</h3>
-            <p>${markerTypeText}: ${location.name || '名称なし'}</p>
-            <p>${location.recordedAt ? new Date(location.recordedAt).toLocaleString() : '日時不明'}</p>
-            <a href="/diary/${diaryId}" target="_blank">詳細を見る</a>
+          <div class="public-diary-popup p-3">
+            <h3 class="text-base font-medium">公開日記</h3>
+            <p class="flex items-center mb-1">
+              <span class="font-medium mr-1">${markerTypeText}:</span>
+              ${location.name || '名称なし'}
+            </p>
+            <p class="text-xs text-gray-500 mb-2">
+              ${location.recordedAt ? new Date(location.recordedAt).toLocaleString() : '日時不明'}
+            </p>
+            <a href="/diary/${diaryId}" class="text-sm text-blue-600 hover:text-blue-800 flex items-center" target="_blank">
+              詳細を見る
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
           </div>
         `;
 
@@ -231,15 +403,25 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
   }, [locations, locationsByDiary, mapInitialized]);
 
   return (
-    <div
-      ref={mapContainer}
-      style={{
-        width,
-        height,
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-      }}
-    />
+    <div className={`relative rounded-lg overflow-hidden shadow-lg ${className}`} style={{ height, width }}>
+      <div ref={mapContainer} className="w-full h-full" />
+      
+      {/* マップ上の追加UI要素（オプション） */}
+      {onMapClick && (
+        <div className="absolute bottom-4 left-4 z-10 bg-white bg-opacity-75 p-2 rounded-md shadow text-xs text-gray-700">
+          <p className="flex items-center">
+            <MapPin className="h-3 w-3 mr-1" />
+            地図をクリックして検索位置を選択
+          </p>
+        </div>
+      )}
+      
+      {/* マップの説明 */}
+      <div className="absolute top-4 right-4 z-10 bg-white rounded-lg shadow-lg p-3 text-xs text-gray-700 max-w-xs">
+        <h4 className="font-medium text-sm mb-1">公開日記マップ</h4>
+        <p>近くの公開されている日記を探索できます。マーカーをクリックして詳細を確認しましょう。</p>
+      </div>
+    </div>
   );
 };
 

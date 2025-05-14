@@ -27,13 +27,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 認証エラー時の処理
-    if (error.response && error.response.status === 401) {
+    // ログインページでの401エラーは特別扱い
+    if (error.response && error.response.status === 401 && window.location.pathname !== '/login') {
+      // ログインページでない場合のみリダイレクト処理を行う
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
-
 export default api;
