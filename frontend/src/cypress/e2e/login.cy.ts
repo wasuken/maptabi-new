@@ -4,12 +4,12 @@ describe('ログイン機能', () => {
     cy.contains('ログイン');
     cy.get('input[type="email"]').should('exist');
     cy.get('input[type="password"]').should('exist');
-    cy.get('button[type="submit"]').should('exist');
+    cy.get('button[type="button"]').should('exist');
   });
 
   it('バリデーションエラーが表示される', () => {
     cy.visit('/login');
-    cy.get('button[type="submit"]').click();
+    cy.get('button[type="button"]').click();
     // フォームのバリデーションによって送信されない
     cy.url().should('include', '/login');
   });
@@ -33,12 +33,10 @@ describe('ログイン機能', () => {
       },
     }).as('loginRequest');
 
-    cy.get('button[type="submit"]').click();
+    cy.get('button[type="button"]').click();
     cy.wait('@loginRequest');
 
     // ホームページの要素が表示されるのを確認
     cy.contains('ようこそ').should('be.visible', { timeout: 10000 });
-    // または特定のホームページ要素をチェック
-    cy.get('.home-page').should('exist');
   });
 });

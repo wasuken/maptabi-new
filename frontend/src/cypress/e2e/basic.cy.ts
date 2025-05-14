@@ -39,8 +39,8 @@ describe('基本テスト', () => {
     cy.wait('@getDiaries');
 
     // アプリケーションのヘッダーを確認
-    cy.get('.app-header').should('exist');
-    cy.contains('地図×日記アプリ').should('be.visible');
+    cy.get('header').should('exist');
+    cy.contains('マプタビ').should('be.visible');
   });
 
   it('ホームページの要素が表示される', () => {

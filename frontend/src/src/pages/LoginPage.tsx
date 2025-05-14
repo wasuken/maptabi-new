@@ -2,7 +2,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { ApiError } from '../types/error';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
@@ -25,28 +24,8 @@ const LoginPage: React.FC = () => {
     login(email, password)
       .then(() => navigate('/'))
       .catch((err) => {
-	setLocalError(err.message || 'ログインに失敗しました');
+        setLocalError(err.message || 'ログインに失敗しました');
       });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setLocalError(null);
-
-    if (!email || !password) {
-      setLocalError('メールアドレスとパスワードを入力してください');
-      return;
-    }
-
-    try {
-      await login(email, password);
-      navigate('/');
-    } catch (err: ApiError | unknown) {
-      const error = err as ApiError;
-      setLocalError(error.response?.data?.message || error.message || 'ログインに失敗しました');
-      throw err;
-    }
   };
 
   return (
@@ -69,9 +48,7 @@ const LoginPage: React.FC = () => {
                   <AlertCircle className="h-5 w-5 text-red-400" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    エラーが発生しました
-                  </h3>
+                  <h3 className="text-sm font-medium text-red-800">エラーが発生しました</h3>
                   <div className="mt-2 text-sm text-red-700">
                     <p>{error || localError}</p>
                   </div>
@@ -80,7 +57,7 @@ const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <form className="space-y-6"  ref={formRef} onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-6" ref={formRef} onSubmit={(e) => e.preventDefault()}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 メールアドレス
@@ -127,16 +104,32 @@ const LoginPage: React.FC = () => {
 
             <div>
               <button
-		type="button" 
-		onClick={handleButtonClick}
+                type="button"
+                onClick={handleButtonClick}
                 disabled={loading}
                 className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     ログイン中...
                   </>

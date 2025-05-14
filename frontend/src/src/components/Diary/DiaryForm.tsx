@@ -6,7 +6,7 @@ import { useGeolocation } from '../../hooks/useGeolocation';
 import MapView from '../Map/MapView';
 import { LocationInput, DiaryLocation } from '../../types/location';
 import { removeItemBySplice } from '../../utils/ArrayHelper';
-import { MapPin, Save, X, Plus, Trash2 } from 'lucide-react';
+import { MapPin, Save, X, Trash2 } from 'lucide-react';
 
 interface DiaryFormProps {
   isEditing?: boolean;
@@ -146,16 +146,19 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
     }
   };
 
-  if (loading && isEditing) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
-  );
+  if (loading && isEditing)
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">{isEditing ? '日記を編集' : '新しい日記を作成'}</h3>
+        <h3 className="text-lg leading-6 font-medium text-gray-900">
+          {isEditing ? '日記を編集' : '新しい日記を作成'}
+        </h3>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">あなたの記録を残しましょう</p>
       </div>
 
@@ -252,15 +255,21 @@ const DiaryForm: React.FC<DiaryFormProps> = ({ isEditing = false }) => {
 
             {locations.length > 0 && (
               <div>
-                <h5 className="text-sm font-medium text-gray-700 mb-2">追加された場所 ({locations.length})</h5>
+                <h5 className="text-sm font-medium text-gray-700 mb-2">
+                  追加された場所 ({locations.length})
+                </h5>
                 <ul className="divide-y divide-gray-200">
                   {locations.map((loc, index) => (
                     <li key={index} className="py-3 flex items-center justify-between">
                       <div className="flex items-center">
                         <MapPin className="h-5 w-5 text-blue-500 mr-2" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{loc.name || `地点 ${index + 1}`}</p>
-                          <p className="text-xs text-gray-500">{loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {loc.name || `地点 ${index + 1}`}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}
+                          </p>
                         </div>
                       </div>
                       <button

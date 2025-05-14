@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Diary } from '../../types/diary';
 import { DiaryLocation } from '../../types/location';
-import { MapPin, Filter, Layers, Search, X } from 'lucide-react';
+import { MapPin, Filter, X } from 'lucide-react';
 
 // 既存のユーティリティ関数を再利用
 enum MarkerType {
@@ -152,7 +152,7 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
       }),
       'top-right'
     );
-    
+
     map.current.addControl(
       new maplibregl.ScaleControl({
         maxWidth: 100,
@@ -160,7 +160,7 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
       }),
       'bottom-left'
     );
-    
+
     map.current.addControl(
       new maplibregl.GeolocateControl({
         positionOptions: {
@@ -217,12 +217,12 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
       // 日記ごとにマーカーとルートを追加
       Object.entries(locationsByDiary).forEach(([diaryIdStr, diaryLocations]) => {
         const diaryId = parseInt(diaryIdStr);
-        
+
         // フィルターが適用されている場合はスキップ
         if (selectedDiaryId !== null && selectedDiaryId !== diaryId) {
           return;
         }
-        
+
         const color = getColorForDiary(diaryId);
         const diary = diaries[diaryId];
 
@@ -260,8 +260,8 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
           let markerContent = '';
 
           switch (markerType) {
-          case MarkerType.START:
-            markerStyle = `
+            case MarkerType.START:
+              markerStyle = `
             width: 32px;
             height: 32px;
             background-color: ${color};
@@ -270,10 +270,10 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
             align-items: center;
             justify-content: center;
               `;
-            markerContent = 'S';
-            break;
-          case MarkerType.END:
-            markerStyle = `
+              markerContent = 'S';
+              break;
+            case MarkerType.END:
+              markerStyle = `
             width: 32px;
             height: 32px;
             background-color: ${color};
@@ -282,10 +282,10 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
             align-items: center;
             justify-content: center;
               `;
-            markerContent = 'E';
-            break;
-          case MarkerType.SINGLE:
-            markerStyle = `
+              markerContent = 'E';
+              break;
+            case MarkerType.SINGLE:
+              markerStyle = `
             width: 32px;
             height: 32px;
             background-color: ${color};
@@ -295,10 +295,10 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
             align-items: center;
             justify-content: center;
               `;
-            markerContent = `<div style="transform: rotate(-45deg);">★</div>`;
-            break;
-          default:
-            markerStyle = `
+              markerContent = `<div style="transform: rotate(-45deg);">★</div>`;
+              break;
+            default:
+              markerStyle = `
             width: 32px;
             height: 32px;
             background-color: ${color};
@@ -307,7 +307,7 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
             align-items: center;
             justify-content: center;
               `;
-            markerContent = `${markerNumber}`;
+              markerContent = `${markerNumber}`;
           }
 
           // カスタムマーカーを作成
@@ -330,17 +330,17 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
           // ポップアップの追加
           let markerTypeText = '';
           switch (markerType) {
-          case MarkerType.START:
-            markerTypeText = '開始地点';
-            break;
-          case MarkerType.END:
-            markerTypeText = '終了地点';
-            break;
-          case MarkerType.SINGLE:
-            markerTypeText = '単一地点';
-            break;
-          default:
-            markerTypeText = `地点 ${markerNumber}`;
+            case MarkerType.START:
+              markerTypeText = '開始地点';
+              break;
+            case MarkerType.END:
+              markerTypeText = '終了地点';
+              break;
+            case MarkerType.SINGLE:
+              markerTypeText = '単一地点';
+              break;
+            default:
+              markerTypeText = `地点 ${markerNumber}`;
           }
 
           const popupContent = `
@@ -441,85 +441,92 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
   return (
     <div className={`relative ${className}`} style={{ height, width }}>
       <div ref={mapContainer} className="h-full w-full rounded-lg overflow-hidden shadow-lg" />
-     
+
       {/* マップコントロール・フィルターパネル */}
       <div className="absolute top-4 left-4 z-10">
-	<div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <button 
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <button
             onClick={toggleFilters}
             className="flex items-center justify-center w-10 h-10 focus:outline-none hover:bg-gray-100"
             title="日記フィルター"
           >
             <Filter className="h-5 w-5 text-gray-700" />
           </button>
-	</div>
-       
-	{showFilters && (
+        </div>
+
+        {showFilters && (
           <div className="mt-2 bg-white rounded-lg shadow-lg p-3 w-64">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-medium text-gray-900 text-sm">日記フィルター</h3>
-              <button onClick={() => setShowFilters(false)} className="text-gray-500 hover:text-gray-700">
-		<X className="h-4 w-4" />
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-4 w-4" />
               </button>
             </div>
-           
+
             <div className="mb-3">
               <button
-		onClick={() => handleDiaryFilter(null)}
-		className={`w-full text-left px-2 py-1.5 rounded text-sm ${
-                  selectedDiaryId === null 
-                    ? 'bg-blue-100 text-blue-800' 
+                onClick={() => handleDiaryFilter(null)}
+                className={`w-full text-left px-2 py-1.5 rounded text-sm ${
+                  selectedDiaryId === null
+                    ? 'bg-blue-100 text-blue-800'
                     : 'hover:bg-gray-100 text-gray-700'
-		}`}
+                }`}
               >
-		すべての日記を表示
+                すべての日記を表示
               </button>
             </div>
-           
+
             <div className="max-h-64 overflow-y-auto">
               {Object.entries(diaries).map(([idStr, diary]) => {
-		const id = parseInt(idStr);
-		const color = getColorForDiary(id);
-		return (
+                const id = parseInt(idStr);
+                const color = getColorForDiary(id);
+                return (
                   <button
                     key={id}
                     onClick={() => handleDiaryFilter(id)}
                     className={`w-full text-left px-2 py-1.5 rounded text-sm mb-1 flex items-center ${
-                      selectedDiaryId === id 
-			? 'bg-blue-100 text-blue-800' 
-			: 'hover:bg-gray-100 text-gray-700'
+                      selectedDiaryId === id
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'hover:bg-gray-100 text-gray-700'
                     }`}
                   >
-                    <span 
-                      className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                    <span
+                      className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
                       style={{ backgroundColor: color }}
                     ></span>
                     <span className="truncate">{diary.title || `日記 ${id}`}</span>
                   </button>
-		);
+                );
               })}
             </div>
           </div>
-	)}
+        )}
       </div>
-     
+
       {/* レジェンド */}
       <div className="absolute bottom-4 left-4 z-10 bg-white bg-opacity-90 rounded-lg shadow-lg p-3 text-sm">
-	<h4 className="font-medium text-gray-900 mb-2 flex items-center text-xs">
+        <h4 className="font-medium text-gray-900 mb-2 flex items-center text-xs">
           <MapPin className="h-3 w-3 mr-1 text-gray-700" />
           マーカーの説明
-	</h4>
-	<div className="grid grid-cols-2 gap-x-4 gap-y-2">
+        </h4>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           <div className="flex items-center">
             <div className="w-5 h-5 bg-blue-500 transform rotate-180 mr-2"></div>
             <span className="text-xs text-gray-700">開始地点</span>
           </div>
           <div className="flex items-center">
-            <div className="w-5 h-5 bg-blue-500 rounded-full mr-2 flex items-center justify-center text-white text-xs">2</div>
+            <div className="w-5 h-5 bg-blue-500 rounded-full mr-2 flex items-center justify-center text-white text-xs">
+              2
+            </div>
             <span className="text-xs text-gray-700">中間地点</span>
           </div>
           <div className="flex items-center">
-            <div className="w-5 h-5 bg-blue-500 rounded-sm mr-2 flex items-center justify-center text-white text-xs">E</div>
+            <div className="w-5 h-5 bg-blue-500 rounded-sm mr-2 flex items-center justify-center text-white text-xs">
+              E
+            </div>
             <span className="text-xs text-gray-700">終了地点</span>
           </div>
           <div className="flex items-center">
@@ -528,7 +535,7 @@ const DiariesMapView: React.FC<DiariesMapViewProps> = ({
             </div>
             <span className="text-xs text-gray-700">単一地点</span>
           </div>
-	</div>
+        </div>
       </div>
     </div>
   );

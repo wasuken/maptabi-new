@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { DiaryLocation } from '../../types/location';
-import { MapPin, Navigation, Layers, ZoomIn, ZoomOut } from 'lucide-react';
 
 // マーカータイプの列挙型（既存のものを使用）
 enum MarkerType {
@@ -104,7 +103,7 @@ const MapView: React.FC<MapViewProps> = ({
       }),
       'top-right'
     );
-    
+
     map.current.addControl(
       new maplibregl.ScaleControl({
         maxWidth: 100,
@@ -112,7 +111,7 @@ const MapView: React.FC<MapViewProps> = ({
       }),
       'bottom-left'
     );
-    
+
     map.current.addControl(
       new maplibregl.GeolocateControl({
         positionOptions: {
@@ -349,62 +348,10 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [locations, mapInitialized]);
 
-  // カスタムコントロールボタン
-  const addCustomControl = (
-    icon: React.ReactNode,
-    title: string,
-    onClick: () => void,
-    position: string = 'top-left'
-  ) => {
-    if (!map.current) return;
-
-    const controlContainer = document.createElement('div');
-    controlContainer.className = `maplibregl-ctrl maplibregl-ctrl-group`;
-    controlContainer.style.margin = '10px';
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'maplibregl-ctrl-icon';
-    button.title = title;
-    button.addEventListener('click', onClick);
-
-    // ボタンに追加するスタイル
-    button.style.width = '30px';
-    button.style.height = '30px';
-    button.style.padding = '5px';
-    button.style.display = 'flex';
-    button.style.alignItems = 'center';
-    button.style.justifyContent = 'center';
-
-    // SVGアイコンをRenderしてHTMLに変換
-    const tempDiv = document.createElement('div');
-    const reactEl = document.createElement('span');
-    reactEl.innerHTML = '↺'; // フォールバックアイコン
-    tempDiv.appendChild(reactEl);
-    button.appendChild(tempDiv.firstChild!);
-
-    controlContainer.appendChild(button);
-    
-    // 位置に基づいてコントロールを配置
-    const container = map.current.getContainer();
-    const referenceControl = container.querySelector(`.maplibregl-ctrl-${position}`);
-    
-    if (referenceControl) {
-      container.insertBefore(controlContainer, referenceControl);
-    } else {
-      container.appendChild(controlContainer);
-    }
-
-    return controlContainer;
-  };
-
   return (
     <div className={`relative rounded-lg overflow-hidden ${className}`} style={{ height, width }}>
-      <div 
-        ref={mapContainer} 
-        className="w-full h-full" 
-      />
-      
+      <div ref={mapContainer} className="w-full h-full" />
+
       {/* マップ上の追加UI要素（オプション） */}
       {onMapClick && (
         <div className="absolute bottom-4 left-4 bg-white bg-opacity-75 p-2 rounded-md shadow text-xs text-gray-700">

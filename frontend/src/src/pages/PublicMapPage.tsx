@@ -84,7 +84,7 @@ const PublicMapPage: React.FC = () => {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">検索条件</h2>
         </div>
-        
+
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
@@ -100,7 +100,7 @@ const PublicMapPage: React.FC = () => {
                 className="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
             </div>
-            
+
             <div>
               <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
                 経度
@@ -114,7 +114,7 @@ const PublicMapPage: React.FC = () => {
                 className="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
             </div>
-            
+
             <div>
               <label htmlFor="radius" className="block text-sm font-medium text-gray-700 mb-1">
                 検索範囲
@@ -134,7 +134,7 @@ const PublicMapPage: React.FC = () => {
               </select>
             </div>
           </div>
-          
+
           <div className="flex flex-wrap gap-3">
             <button
               onClick={handleSearch}
@@ -143,9 +143,25 @@ const PublicMapPage: React.FC = () => {
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   検索中...
                 </>
@@ -156,7 +172,7 @@ const PublicMapPage: React.FC = () => {
                 </>
               )}
             </button>
-            
+
             <button
               onClick={useCurrentLocation}
               className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -165,14 +181,14 @@ const PublicMapPage: React.FC = () => {
               現在地を使用
             </button>
           </div>
-          
+
           <p className="mt-3 text-sm text-gray-500 flex items-center">
             <MapPin className="h-4 w-4 mr-1 text-gray-400" />
             マップをクリックして位置を選択することもできます
           </p>
         </div>
       </div>
-      
+
       {/* エラーメッセージ */}
       {error && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
@@ -186,7 +202,7 @@ const PublicMapPage: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* マップ表示 */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="h-[500px]">
@@ -198,10 +214,16 @@ const PublicMapPage: React.FC = () => {
           />
         </div>
       </div>
-      
+
       {/* 検索結果情報 */}
       {hasSearched && (
-        <div className={locations.length === 0 ? "bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md" : "bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md"}>
+        <div
+          className={
+            locations.length === 0
+              ? 'bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md'
+              : 'bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md'
+          }
+        >
           <div className="flex">
             <div className="flex-shrink-0">
               {locations.length === 0 ? (
@@ -217,14 +239,15 @@ const PublicMapPage: React.FC = () => {
                 </p>
               ) : (
                 <p className="text-sm text-blue-700">
-                  {locations.length}件の位置情報が見つかりました。マーカーをクリックすると詳細が表示されます。
+                  {locations.length}
+                  件の位置情報が見つかりました。マーカーをクリックすると詳細が表示されます。
                 </p>
               )}
             </div>
           </div>
         </div>
       )}
-      
+
       {/* マップ凡例 */}
       <MarkerLegend />
     </div>

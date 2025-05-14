@@ -20,30 +20,44 @@ const Header: React.FC = () => {
           {/* ロゴとデスクトップナビゲーション */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <Link to="/" className="text-xl font-bold text-blue-600">マプタビ</Link>
+              <Link to="/" className="text-xl font-bold text-blue-600">
+                マプタビ
+              </Link>
             </div>
-            
+
             {/* デスクトップナビゲーション */}
             <nav className="hidden md:ml-10 md:flex md:space-x-4">
-              <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center">
+              <Link
+                to="/"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
+              >
                 <BookOpen className="w-4 h-4 mr-1" />
                 <span>ホーム</span>
               </Link>
-              <Link to="/map" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center">
+              <Link
+                to="/map"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
+              >
                 <MapPin className="w-4 h-4 mr-1" />
                 <span>地図</span>
               </Link>
-              <Link to="/public-map" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center">
+              <Link
+                to="/public-map"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
+              >
                 <Globe className="w-4 h-4 mr-1" />
                 <span>公開マップ</span>
               </Link>
-              <Link to="/diary/new" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center">
+              <Link
+                to="/diary/new"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
+              >
                 <PlusCircle className="w-4 h-4 mr-1" />
                 <span>新規作成</span>
               </Link>
             </nav>
           </div>
-          
+
           {/* ユーザーメニュー（デスクトップ） */}
           <div className="hidden md:flex items-center">
             {user ? (
@@ -52,8 +66,8 @@ const Header: React.FC = () => {
                   <User className="w-4 h-4 mr-1" />
                   <span>{user.displayName}</span>
                 </div>
-                <button 
-                  onClick={handleLogout} 
+                <button
+                  onClick={handleLogout}
                   className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                   <LogOut className="w-4 h-4 mr-1" />
@@ -61,15 +75,15 @@ const Header: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 ログイン
               </Link>
             )}
           </div>
-          
+
           {/* モバイルメニューボタン */}
           <div className="md:hidden -mr-2 flex items-center">
             <button
@@ -87,37 +101,37 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* モバイルメニュー */}
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
               onClick={() => setIsMenuOpen(false)}
             >
               <BookOpen className="w-5 h-5 mr-2" />
               <span>ホーム</span>
             </Link>
-            <Link 
-              to="/map" 
+            <Link
+              to="/map"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
               onClick={() => setIsMenuOpen(false)}
             >
               <MapPin className="w-5 h-5 mr-2" />
               <span>地図</span>
             </Link>
-            <Link 
-              to="/public-map" 
+            <Link
+              to="/public-map"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
               onClick={() => setIsMenuOpen(false)}
             >
               <Globe className="w-5 h-5 mr-2" />
               <span>公開マップ</span>
             </Link>
-            <Link 
-              to="/diary/new" 
+            <Link
+              to="/diary/new"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -125,7 +139,7 @@ const Header: React.FC = () => {
               <span>新規作成</span>
             </Link>
           </div>
-          
+
           {/* モバイルユーザーメニュー */}
           {user && (
             <div className="pt-4 pb-3 border-t border-gray-200">

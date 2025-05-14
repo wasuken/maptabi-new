@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { DiaryLocation } from '../../types/location';
-import { MapPin, Search, Layers, Compass } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 // マーカータイプの列挙型 (既存のものを使用)
 enum MarkerType {
@@ -159,7 +159,7 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
       }),
       'top-right'
     );
-    
+
     map.current.addControl(
       new maplibregl.ScaleControl({
         maxWidth: 100,
@@ -167,7 +167,7 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
       }),
       'bottom-left'
     );
-    
+
     map.current.addControl(
       new maplibregl.GeolocateControl({
         positionOptions: {
@@ -403,9 +403,12 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
   }, [locations, locationsByDiary, mapInitialized]);
 
   return (
-    <div className={`relative rounded-lg overflow-hidden shadow-lg ${className}`} style={{ height, width }}>
+    <div
+      className={`relative rounded-lg overflow-hidden shadow-lg ${className}`}
+      style={{ height, width }}
+    >
       <div ref={mapContainer} className="w-full h-full" />
-      
+
       {/* マップ上の追加UI要素（オプション） */}
       {onMapClick && (
         <div className="absolute bottom-4 left-4 z-10 bg-white bg-opacity-75 p-2 rounded-md shadow text-xs text-gray-700">
@@ -415,7 +418,7 @@ const PublicMapView: React.FC<PublicMapViewProps> = ({
           </p>
         </div>
       )}
-      
+
       {/* マップの説明 */}
       <div className="absolute top-4 right-4 z-10 bg-white rounded-lg shadow-lg p-3 text-xs text-gray-700 max-w-xs">
         <h4 className="font-medium text-sm mb-1">公開日記マップ</h4>

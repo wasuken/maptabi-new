@@ -23,13 +23,13 @@ const HomePage: React.FC = () => {
       try {
         // 実際のプロジェクトでは、この部分を適切なAPIコールに置き換える
         const diaries = await diaryService.getAllDiaries();
-        
+
         // ダミー処理としてデータから統計情報を生成
         let totalLocations = 0;
         let latestDiary = null;
         let latestDate = new Date(0);
-        
-        diaries.forEach(diary => {
+
+        diaries.forEach((diary) => {
           // 最新の日記を見つける
           const diaryDate = new Date(diary.createdAt);
           if (diaryDate > latestDate) {
@@ -40,12 +40,12 @@ const HomePage: React.FC = () => {
               date: format(diaryDate, 'yyyy年MM月dd日', { locale: ja }),
             };
           }
-          
+
           // ここではロケーション数は取得できないのでダミーデータを使用
           // 実際のアプリケーションでは適切なAPIを呼び出す
           totalLocations += Math.floor(Math.random() * 5) + 1;
         });
-        
+
         setStats({
           totalDiaries: diaries.length,
           totalLocations,
@@ -57,7 +57,7 @@ const HomePage: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchStats();
   }, []);
 
@@ -66,9 +66,7 @@ const HomePage: React.FC = () => {
       {/* ウェルカムヒーロー */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl shadow-xl overflow-hidden">
         <div className="px-6 py-12 sm:px-12">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            ようこそ、{user?.displayName}さん
-          </h1>
+          <h1 className="text-3xl font-bold text-white mb-2">ようこそ、{user?.displayName}さん</h1>
           <p className="text-blue-100 mb-6 max-w-2xl">
             マプタビで思い出を地図と一緒に記録しましょう。日記を書いて、位置情報を残すことで、あなたの体験はもっと色鮮やかに蘇ります。
           </p>
@@ -98,21 +96,25 @@ const HomePage: React.FC = () => {
             <BookOpen className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{loading ? '読み込み中...' : stats.totalDiaries}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {loading ? '読み込み中...' : stats.totalDiaries}
+            </h3>
             <p className="text-sm text-gray-500">記録した日記</p>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow p-6 flex items-center">
           <div className="rounded-full bg-green-100 p-3 mr-4">
             <MapPin className="h-6 w-6 text-green-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{loading ? '読み込み中...' : stats.totalLocations}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {loading ? '読み込み中...' : stats.totalLocations}
+            </h3>
             <p className="text-sm text-gray-500">マークした場所</p>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow p-6 flex items-center">
           <div className="rounded-full bg-purple-100 p-3 mr-4">
             <Calendar className="h-6 w-6 text-purple-600" />
@@ -129,7 +131,9 @@ const HomePage: React.FC = () => {
               </>
             ) : (
               <>
-                <h3 className="text-lg font-semibold text-gray-900">{loading ? '読み込み中...' : 'なし'}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {loading ? '読み込み中...' : 'なし'}
+                </h3>
                 <p className="text-sm text-gray-500">最近の日記</p>
               </>
             )}
