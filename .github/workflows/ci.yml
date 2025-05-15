@@ -142,12 +142,16 @@ jobs:
           AUTHOR=$(git log -1 $SHA --pretty=format:'%an')
           MESSAGE=$(git log -1 $SHA --pretty=format:'%s')
           CHANGES=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | wc -l)
-          FILES_CHANGED=$(git diff --name-only --diff-filter=ACMRT $BASE $SHA | sort | head -10 | sed 's/^/- /')
           
+          # マルチライン出力のためのデリミタを設定
           echo "author=$AUTHOR" >> $GITHUB_OUTPUT
           echo "message=$MESSAGE" >> $GITHUB_OUTPUT
           echo "changes=$CHANGES" >> $GITHUB_OUTPUT
-          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+          
+          # 変更ファイルリストをマルチライン出力として設定
+          echo "files_changed<<EOF" >> $GITHUB_OUTPUT
+          git diff --name-only --diff-filter=ACMRT $BASE $SHA | sort | head -10 | sed 's/^/- /' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       
       - name: Set status info
         id: status
