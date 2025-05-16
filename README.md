@@ -47,7 +47,7 @@
 
 1. リポジトリをクローン:
 ```bash
-git clone https://github.com/yourusername/maptabi.git
+git clone https://github.com/wasuken/maptabi-new.git
 cd maptabi
 
 ### frontend
