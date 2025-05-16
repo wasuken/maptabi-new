@@ -18,7 +18,7 @@ jobs:
         image: postgis/postgis:14-3.2
         env:
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: mapdiary_test
+          POSTGRES_DB: maptabi_test
         ports:
           - 5432:5432
         options: >-

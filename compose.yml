@@ -38,7 +38,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=4000
-      - DATABASE_URL=postgres://postgres:password@db:5432/mapdiary
+      - DATABASE_URL=postgres://postgres:password@db:5432/maptabi
       - JWT_SECRET=development_jwt_secret
       - JWT_EXPIRES_IN=7d
     depends_on:
@@ -53,4 +53,4 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=mapdiary
+      - POSTGRES_DB=maptabi

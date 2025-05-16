@@ -4,7 +4,7 @@ import logger from '../utils/logger';
 
 dotenv.config();
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:password@db:5432/mapdiary';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:password@db:5432/maptabi';
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
