@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
             プライバシーポリシー
           </Link>
           <a
-            href="https://github.com/wasuken/maptabi"
+            href="https://github.com/wasuken/maptabi-new"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-500 hover:text-gray-900 flex items-center"

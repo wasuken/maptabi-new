@@ -45,7 +45,7 @@ jobs:
       - name: Setup Database
         run: |
           cd backend/src
-          cp .env.test.example .env.test
+          cp .env.example .env.test
           npm run db:setup:test || echo "No db setup script found"
       
       - name: Run backend tests
