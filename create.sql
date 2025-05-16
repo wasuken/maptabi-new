@@ -34,6 +34,16 @@ CREATE TABLE IF NOT EXISTS locations (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Location Comments table（新規追加）
+CREATE TABLE IF NOT EXISTS location_comments (
+  id SERIAL PRIMARY KEY,
+  location_id INTEGER REFERENCES locations(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Images table
 CREATE TABLE IF NOT EXISTS images (
   id SERIAL PRIMARY KEY,
@@ -67,3 +77,5 @@ CREATE INDEX IF NOT EXISTS locations_diary_id_idx ON locations(diary_id);
 CREATE INDEX IF NOT EXISTS locations_coordinates_idx ON locations USING GIST (coordinates);
 CREATE INDEX IF NOT EXISTS images_diary_id_idx ON images(diary_id);
 CREATE INDEX IF NOT EXISTS tags_user_id_idx ON tags(user_id);
+CREATE INDEX IF NOT EXISTS location_comments_location_id_idx ON location_comments(location_id);
+CREATE INDEX IF NOT EXISTS location_comments_user_id_idx ON location_comments(user_id);
