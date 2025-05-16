@@ -39,7 +39,7 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-	  {/* 認証不要の静的ページ */}
+          {/* 認証不要の静的ページ */}
           <Route path="/about" element={<Layout />}>
             <Route index element={<AboutPage />} />
           </Route>
