@@ -4,6 +4,7 @@ import * as diaryService from '../services/diary';
 import { DiaryWithLocations } from '../types/diary';
 import { ApiError } from '../types/error';
 import MapView from '../components/Map/MapView';
+import CommentList from '../components/Comments/CommentList';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Calendar, MapPin, Edit, Trash2, ArrowLeft, Lock, Globe } from 'lucide-react';
@@ -15,6 +16,7 @@ const DiaryDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchDiary = async () => {
@@ -212,6 +214,42 @@ const DiaryDetailPage: React.FC = () => {
             ))}
           </div>
         </div>
+	      {diary.locations && diary.locations.length > 0 && (
+        <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">位置情報</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {diary.locations.map((location) => (
+              <div
+                key={location.id}
+                className={`p-3 rounded-lg border ${selectedLocationId === location.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`}
+                onClick={() =>
+                  setSelectedLocationId(location.id === selectedLocationId ? null : location.id)
+                }
+              >
+                <h4 className="font-medium text-gray-900">
+                  {location.name || `地点 ${location.orderIndex + 1}`}
+                </h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  緯度: {location.latitude.toFixed(6)}, 経度: {location.longitude.toFixed(6)}
+                </p>
+                {location.recordedAt && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {format(new Date(location.recordedAt), 'yyyy年MM月dd日 HH:mm', { locale: ja })}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 選択された位置情報のコメント */}
+          {selectedLocationId && (
+            <div className="mt-4 border-t border-gray-200 pt-4">
+              <CommentList locationId={selectedLocationId} />
+            </div>
+          )}
+        </div>
+      )}
       </div>
 
       {/* アクションボタン */}

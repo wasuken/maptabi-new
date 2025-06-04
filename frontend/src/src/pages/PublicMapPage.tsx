@@ -27,6 +27,7 @@ const PublicMapPage: React.FC = () => {
   const handleMapClick = (lat: number, lng: number) => {
     setSearchLat(lat.toString());
     setSearchLng(lng.toString());
+    setMapCenter([lng, lat]);
   };
 
   const useCurrentLocation = () => {

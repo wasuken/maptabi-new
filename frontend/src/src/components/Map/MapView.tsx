@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { DiaryLocation } from '../../types/location';
+import CommentList from '../Comments/CommentList';
 
 // マーカータイプの列挙型（既存のものを使用）
 enum MarkerType {
@@ -34,6 +35,14 @@ const MapView: React.FC<MapViewProps> = ({
   const map = useRef<maplibregl.Map | null>(null);
   const styleElement = useRef<HTMLStyleElement | null>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<DiaryLocation | null>(null);
+  const [showComments, setShowComments] = useState(false);
+
+  // マーカークリックハンドラを追加
+  const handleMarkerClick = (location: DiaryLocation) => {
+    setSelectedLocation(location);
+    setShowComments(true);
+  };
 
   // マップの初期化
   useEffect(() => {
@@ -45,7 +54,7 @@ const MapView: React.FC<MapViewProps> = ({
       .custom-marker {
         cursor: pointer;
       }
-      
+
       .marker-start, .marker-end, .marker-circle, .marker-single {
         position: relative;
         display: flex;
@@ -250,12 +259,15 @@ const MapView: React.FC<MapViewProps> = ({
           </div>
         `;
 
-        // マーカーを地図に追加
-        const marker = new maplibregl.Marker({
-          element: markerElement,
-        })
-          .setLngLat([location.longitude, location.latitude])
-          .addTo(map.current!);
+	// markerの作成で、クリックイベントを追加
+	const marker = new maplibregl.Marker({
+	  element: markerElement,
+	})
+	  .setLngLat([location.longitude, location.latitude])
+	  .addTo(map.current!)
+	  .on('click', () => {
+	    handleMarkerClick(location);
+	  });
 
         // ポップアップの追加
         let markerTypeText = '';
@@ -350,7 +362,7 @@ const MapView: React.FC<MapViewProps> = ({
 
   return (
     <div className={`relative rounded-lg overflow-hidden ${className}`} style={{ height, width }}>
-      <div ref={mapContainer} className="w-full h-full" />
+  <div ref={mapContainer} className="w-full h-full" />
 
       {/* マップ上の追加UI要素（オプション） */}
       {onMapClick && (
@@ -358,7 +370,39 @@ const MapView: React.FC<MapViewProps> = ({
           <p>地図をクリックして位置を追加</p>
         </div>
       )}
-    </div>
+
+    {/* コメントサイドパネル */}
+    {showComments && selectedLocation && (
+      <div className="absolute top-0 right-0 h-full bg-white shadow-lg w-80 p-4 overflow-y-auto">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-base font-medium text-gray-900">
+            {selectedLocation.name || `地点 ${selectedLocation.id}`}
+          </h3>
+          <button 
+            onClick={() => setShowComments(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-xs text-gray-600">
+            緯度: {selectedLocation.latitude.toFixed(6)}
+            <br />
+            経度: {selectedLocation.longitude.toFixed(6)}
+          </p>
+          {selectedLocation.recordedAt && (
+            <p className="text-xs text-gray-600 mt-1">
+              記録日時: {new Date(selectedLocation.recordedAt).toLocaleString()}
+            </p>
+          )}
+        </div>
+
+        <CommentList locationId={selectedLocation.id} />
+      </div>
+    )}
+  </div>
   );
 };
 
